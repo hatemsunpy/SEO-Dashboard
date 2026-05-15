@@ -19,6 +19,7 @@ from sqlalchemy import func, not_, or_
 from .sqlite_db import  get_session
 from .models import GSCAnalytics
 from .gsc_client import GSCAuth
+from .gsc_client import get_date_range
 
 # %% ../nbs/05_gsc_storage.ipynb #e3c41198
 def filter_site(query,  # SQLModel query

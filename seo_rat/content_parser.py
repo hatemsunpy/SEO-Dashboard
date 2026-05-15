@@ -8,7 +8,7 @@ __all__ = ['SPECIAL_PREFIXES', 'IMAGE_EXTS', 'parse_metadata', 'parse_notebook_m
            'check_content_length', 'extract_headers', 'extract_links', 'extract_images', 'imgs_missing_alts',
            'is_special_url', 'filter_internal_links', 'filter_external_links', 'normalize_text', 'detect_phone_numbers',
            'calculate_similarity', 'get_file_paths', 'get_file_name', 'get_markdown_files', 'get_page_content',
-           'arabic_to_slug', 'map_files_to_slugs']
+           'arabic_to_slug', 'map_files_to_slugs', 'fetch_url_as_markdown', 'extract_html_metadata']
 
 # %% ../nbs/02_content_parser.ipynb #49f44ecd
 import re
@@ -63,8 +63,8 @@ def is_visible_code(cell: dict,  # Notebook cell dict
 
 
 # %% ../nbs/02_content_parser.ipynb #d453e3e2
-def extract_notebook_content(content:str,        # Raw Jupyter notebook JSON string
-                              is_quarto:bool=False # Whether the notebook is a Quarto doc
+def extract_notebook_content(content: str,  # Raw Jupyter notebook JSON string
+                             is_quarto: bool = False  # Whether the notebook is a Quarto doc
                              ) -> str:
     "Extract visible markdown and code content from a Jupyter notebook."
     cells = json.loads(content).get("cells", [])
@@ -129,20 +129,18 @@ def check_content_length(content: str  # Page body content
 
 
 # %% ../nbs/02_content_parser.ipynb #657150ca
-def extract_headers(file_path: str  # Path to markdown file
-                    ) -> list[dict]:
-    "Extract all headers with their level, line number, content, and length."
+def extract_headers(content: str) -> list[dict]:
+    "Extract all headers from markdown content."
     headings = []
-    with open(file_path, "r") as file:
-        for line_number, line in enumerate(file, start=1):
-            line = line.strip()
-            for level in range(1, 7):
-                prefix = "#" * level + " "
-                if line.startswith(prefix):
-                    content = line.strip("#").strip()
-                    headings.append({"type": f"h{level}", "line_number": line_number,
-                                     "content": content, "length": len(content)})
-                    break
+    for line_number, line in enumerate(content.splitlines(), start=1):
+        line = line.strip()
+        for level in range(1, 7):
+            prefix = "#" * level + " "
+            if line.startswith(prefix):
+                text = line.strip("#").strip()
+                headings.append({"type": f"h{level}", "line_number": line_number,
+                                 "content": text, "length": len(text)})
+                break
     return headings
 
 
@@ -249,9 +247,9 @@ def detect_phone_numbers(text: str  # Text to search
 
 
 # %% ../nbs/02_content_parser.ipynb #2b08ed7a
-def calculate_similarity(text1:str, # First text
-                         text2:str  # Second text
-                        ) -> float:
+def calculate_similarity(text1: str,  # First text
+                         text2: str  # Second text
+                         ) -> float:
     "Calculate similarity ratio between two texts using SequenceMatcher."
     from difflib import SequenceMatcher
     return SequenceMatcher(None, text1, text2).ratio()
@@ -307,4 +305,52 @@ def map_files_to_slugs(directory: str  # Directory containing Arabic markdown fi
                        ) -> dict[str, str]:
     "Map markdown filenames to their URL slugs."
     return {f: arabic_to_slug(f) for f in get_markdown_files(directory)}
+
+
+# %% ../nbs/02_content_parser.ipynb #347659b7ad901618
+def fetch_url_as_markdown(url: str,  # Live URL to fetch
+                          extractor: str = "trafilatura"  # 'trafilatura' or 'html2text'
+                          ) -> str:
+    "Fetch a live URL and return its main content as markdown."
+    import httpx, lxml.html
+    from lxml.html.clean import Cleaner
+
+    body = lxml.html.fromstring(httpx.get(url).text).xpath('//body')[0]
+    body = Cleaner(javascript=True, style=True).clean_html(body)
+    cts = ''.join(lxml.html.tostring(c, encoding='unicode') for c in body)
+
+    if extractor == "trafilatura":
+        from trafilatura import extract
+        if '<article>' not in cts.lower(): cts = f'<article>{cts}</article>'
+        return extract(f'<html><body>{cts}</body></html>', output_format='markdown',
+                       favor_recall=True, include_tables=True,
+                       include_links=False, include_images=False) or ""
+    else:
+        from html2text import HTML2Text
+        h = HTML2Text(bodywidth=5000)
+        h.ignore_links = True
+        h.ignore_images = True
+        return h.handle(cts).strip()
+
+
+# %% ../nbs/02_content_parser.ipynb #1b791e98eb8b69b9
+from bs4 import BeautifulSoup
+
+
+def extract_html_metadata(html: str) -> dict:
+    "Extract SEO metadata from HTML meta tags."
+    soup = BeautifulSoup(html, "html.parser")
+
+    def meta(name=None, prop=None):
+        if prop:
+            tag = soup.find("meta", property=prop)
+        else:
+            tag = soup.find("meta", attrs={"name": name})
+        return tag["content"].strip() if tag and tag.get("content") else ""
+
+    return {
+        "title": (soup.title.string.strip() if soup.title else "") or meta(prop="og:title"),
+        "description": meta(name="description") or meta(prop="og:description"),
+        "date": meta(prop="article:published_time")[:10] if meta(prop="article:published_time") else "",
+    }
 

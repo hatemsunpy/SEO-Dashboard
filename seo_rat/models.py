@@ -79,35 +79,35 @@ def add_or_update_website(
         website_id: int | None = None  #ID to update exisiting.
 ) -> Website:
     """Add a new website or update an exisiting one."""
-    session = get_session()
-    if website_id:
-        website = session.get(Website, website_id)
-        if website is None:
-            raise ValueError(f"Website with id {website_id} not found")
-    else:
-        website = session.exec(select(Website).where(Website.url == url)).first()
+    with get_session() as session:
+        if website_id:
+            website = session.get(Website, website_id)
+            if website is None:
+                raise ValueError(f"Website with id {website_id} not found")
+        else:
+            website = session.exec(select(Website).where(Website.url == url)).first()
 
-    if website:
-        #update existing
-        website.name = name
-        website.site_type = site_type
-        website.desc = desc or website.desc
-        website.lang = lang
-        website.content_dir = content_dir
-    else:
-        #Create New Website
-        website = Website(
-            url=url,
-            name=name,
-            site_type=site_type,
-            desc=desc,
-            lang=lang,
-            content_dir=content_dir
-        )
-        session.add(website)
-    session.commit()
-    session.refresh(website)
-    return website
+        if website:
+            #update existing
+            website.name = name
+            website.site_type = site_type
+            website.desc = desc or website.desc
+            website.lang = lang
+            website.content_dir = content_dir
+        else:
+            #Create New Website
+            website = Website(
+                url=url,
+                name=name,
+                site_type=site_type,
+                desc=desc,
+                lang=lang,
+                content_dir=content_dir
+            )
+            session.add(website)
+        session.commit()
+        session.refresh(website)
+        return website
 
 
 # %% ../nbs/01_models.ipynb #deb5e8d28e4d2b05

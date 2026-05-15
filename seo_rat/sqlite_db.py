@@ -14,11 +14,20 @@ load_dotenv()
 
 
 # %% ../nbs/00_sqlite.ipynb #ed723feac521dba
-def get_session(db_url:str|None=None # Full SQLite URL, or uses `SEO_RAT_DB_URL` env var
-               ) -> Session:
+from contextlib import contextmanager
+
+
+@contextmanager
+def get_session(db_url: str | None = None  # Full SQLite URL, or uses `SEO_RAT_DB_URL` env var
+                ) -> Session:
     "Create a SQLite session."
     if db_url is None: db_url = os.getenv("SEO_RAT_DB_URL")
     engine = create_engine(db_url)
     SQLModel.metadata.create_all(engine)
-    return Session(engine)
+    session = Session(engine)
+    try:
+        yield session
+    finally:
+        session.close()
+
 

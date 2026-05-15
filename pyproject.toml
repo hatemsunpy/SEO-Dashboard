@@ -30,6 +30,9 @@ dependencies = [
     "pysymbol-llm>=0.0.5",
     "llms-txt>=0.0.6",
     "rich>=14.3.3",
+    "python-fasthtml>=0.13.3",
+    "trafilatura>=2.0.0",
+    "html2text>=2025.4.15",
 ]
 
 [project.urls]
@@ -55,6 +58,8 @@ seo-rat-list-websites = "seo_rat.cli:seo_rat_list_websites"
 seo-rat-delete-website = "seo_rat.cli:seo_rat_delete_website"
 seo-rat-compare = "seo_rat.cli:seo_rat_compare"
 seo-rat-country-breakdown = "seo_rat.cli:seo_rat_country_breakdown"
+seo-rat-schema-check = "seo_rat.cli:seo_rat_schema_check"
+seo-rat-faq = "seo_rat.cli:seo_rat_faq"
 
 [project.entry-points.nbdev]
 seo_rat = "seo_rat._modidx:d"
