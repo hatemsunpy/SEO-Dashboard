@@ -8,29 +8,18 @@ from sqlmodel import Session, select
 from .sqlite_db import SQLiteDB
 from .gsc_client import GSCAuth, get_date_range
 from .gsc_storage import get_top_queries, get_page_analytics, get_trends
-from seo_rat.gsc_insights import (
-    detect_query_trends,
-    classify_page_intents,
-    find_missing_queries,
-    find_green_keywords,
-    get_date_ranges_for_comparison,
-)
-from seo_rat.content_parser import (
-    get_page_content,
-    parse_metadata,
-    parse_notebook_metadata,
-    check_title_length,
-    check_desc_length,
-    check_content_length,
-    extract_headers,
-    extract_images,
-    extract_links,
-    imgs_missing_alts,
-)
-from .seo_content_analysis import check_h1_count, calculate_keyword_density
+from seo_rat.insights.trends import detect_query_trends, get_date_ranges_for_comparison
+from seo_rat.insights.intent import classify_page_intents
+from seo_rat.insights.keywords import find_missing_queries, find_green_keywords
+from seo_rat.parser.metadata import parse_metadata, parse_notebook_metadata
+from seo_rat.parser.checks import check_title_length, check_desc_length, check_content_length
+from seo_rat.parser.extractors import extract_headers, extract_images, extract_links, imgs_missing_alts
+from seo_rat.parser.utils import get_page_content
+from .content.checks import check_h1_count
+from .content.analysis import calculate_keyword_density
 from .content_mapper import map_all_urls_to_files
 from .index_tracking import fetch_sitemap_urls
-from .seo_report import analyze_links
+from .report.analysis import analyze_links
 
 
 

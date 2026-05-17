@@ -8,16 +8,17 @@ __all__ = ['detect_duplicate_content', 'analyze_keyword_cannibalization', 'analy
 
 # %% ../nbs/11_seo_site_analysis.ipynb #78c004a8
 from sqlmodel import Session, select
-from .article import Article,get_articles_by_website
-from .content_parser import remove_metadata, normalize_text, calculate_similarity
-from .seo_content_analysis import calculate_keyword_density
+from .article import Article, get_articles_by_website
+from .parser.metadata import remove_metadata
+from .parser.utils import normalize_text, calculate_similarity
+from .content.analysis import calculate_keyword_density
 
 # %% ../nbs/11_seo_site_analysis.ipynb #adebe122
-def detect_duplicate_content(session:Session,              # Active database session
-                              website_id:int,               # Website to search within
-                              content:str,                  # Normalized page content
-                              file_path:str,                # Current article path (to exclude self)
-                              similarity_threshold:float=0.8 # Minimum similarity to flag
+def detect_duplicate_content(session: Session,  # Active database session
+                             website_id: int,  # Website to search within
+                             content: str,  # Normalized page content
+                             file_path: str,  # Current article path (to exclude self)
+                             similarity_threshold: float = 0.8  # Minimum similarity to flag
                              ) -> dict:
     "Find articles within a website with content similar to the given content."
     current = normalize_text(remove_metadata(content))
@@ -31,10 +32,10 @@ def detect_duplicate_content(session:Session,              # Active database ses
 
 
 # %% ../nbs/11_seo_site_analysis.ipynb #ead01c83
-def analyze_keyword_cannibalization(session:Session, # Active database session
-                                    website_id:int,  # Website to search within
-                                    keyword:str      # Focus keyword to check
-                                   ) -> dict:
+def analyze_keyword_cannibalization(session: Session,  # Active database session
+                                    website_id: int,  # Website to search within
+                                    keyword: str  # Focus keyword to check
+                                    ) -> dict:
     "Find articles within a website competing for the same focus keyword."
     articles = [a for a in get_articles_by_website(session, website_id)
                 if a.focus_keyword == keyword]
@@ -49,10 +50,10 @@ def analyze_keyword_cannibalization(session:Session, # Active database session
             "count": len(articles), "articles": results}
 
 
-def analyze_content_groups(session:Session,              # Active database session
-                           website_id:int,               # Website to search within
-                           similarity_threshold:float=0.8 # Minimum similarity to group
-                          ) -> dict:
+def analyze_content_groups(session: Session,  # Active database session
+                           website_id: int,  # Website to search within
+                           similarity_threshold: float = 0.8  # Minimum similarity to group
+                           ) -> dict:
     "Group similar articles together across a website."
     articles = get_articles_by_website(session, website_id)
     groups, processed = [], set()
@@ -75,10 +76,12 @@ def analyze_content_groups(session:Session,              # Active database sessi
 # %% ../nbs/11_seo_site_analysis.ipynb #9e4e60af7b4cfe7e
 import hashlib
 
+
 def get_shingles(text: str, n: int = 3) -> set:
     "Generate n-word shingles from text."
     words = text.lower().split()
-    return {" ".join(words[i:i+n]) for i in range(len(words) - n + 1)}
+    return {" ".join(words[i:i + n]) for i in range(len(words) - n + 1)}
+
 
 def minhash_signature(shingles: set, num_hashes: int = 128) -> list[int]:
     "Compute MinHash signature for a set of shingles."
@@ -91,13 +94,15 @@ def minhash_signature(shingles: set, num_hashes: int = 128) -> list[int]:
         signature.append(min_hash)
     return signature
 
+
 def minhash_similarity(sig1: list[int], sig2: list[int]) -> float:
     "Estimate Jaccard similarity from two MinHash signatures."
     return sum(a == b for a, b in zip(sig1, sig2)) / len(sig1)
 
+
 def analyze_content_groups_fast(session: Session, website_id: int,
-                                 similarity_threshold: float = 0.8,
-                                 num_hashes: int = 128) -> dict:
+                                similarity_threshold: float = 0.8,
+                                num_hashes: int = 128) -> dict:
     "Group similar articles using MinHash for fast approximate similarity."
     articles = get_articles_by_website(session, website_id)
     sigs = {}
@@ -114,7 +119,7 @@ def analyze_content_groups_fast(session: Session, website_id: int,
         if id1 in processed: continue
         path1, sig1 = sigs[id1]
         group = {"main_article": path1, "similar_articles": []}
-        for id2 in ids[i+1:]:
+        for id2 in ids[i + 1:]:
             if id2 in processed: continue
             path2, sig2 = sigs[id2]
             sim = minhash_similarity(sig1, sig2)

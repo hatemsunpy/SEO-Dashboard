@@ -108,7 +108,7 @@ def fetch_gsc_data(auth: GSCAuth,  # Authenticated GSCAuth instance
                    dimensions: list[str] | None = None,  # GSC dimensions to group by
                    row_limit: int = 25000  # Max rows to fetch
                    ) -> list[dict]:
-    "Fetch analytics rows from Google Search Console."
+    "Fetch analytics rows from Google Search queryConsole."
     if dimensions is None: dimensions = ["query", "page", "country", "device"]
     service = build("searchconsole", "v1", credentials=auth.get_credentials())
     body = {"startDate": start_date, "endDate": end_date, "dimensions": dimensions, "rowLimit": row_limit}

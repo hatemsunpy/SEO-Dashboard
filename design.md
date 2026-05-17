@@ -88,6 +88,7 @@ not WordPress.
 
 ### Schema
 
+- How to build PC from scratch
 - [ ] Page-needed schema prediction (DSPy agent)
 - [x] Competitor schema analysis (browser extension — needs $5 store fee)
     - I just need to publish it
@@ -100,15 +101,14 @@ not WordPress.
 
 1. [ ] Alt text suggestions
 2. [ ] Broken link detection (async httpx 404 checks)
-   3. low priority 
+    3. low priority
 4. [ ] Manual focus keyword input + automatic secondary keyword assignment (needs UI)
 
 ### Medium Priority
 
 5. [ ] Internal linking suggestions (embedding-based)
 6. [ ] Social meta (OpenGraph, Twitter Cards)
-7. [ ] Canonical tag management
-8. [ ] llms.txt generator
+7. [x] llms.txt generator
 
 ### Lower Priority
 
@@ -123,12 +123,24 @@ not WordPress.
 
 ## 🌐 Web App (FastHTML)
 
-- [ ] Add/manage websites UI
-- [ ] Data sync UI
-- [ ] Article CRUD
-- [ ] SERPWatcher
+- [x] Add/manage websites UI
+- [x] Data sync UI
+- [x] Article CRUD
+- [x] SERPWatcher
 - [ ] Backlink checker
 - [ ] Site explorer
+- [ ] SEO Report
+
+### Implementatino
+
+#### HomePage
+
+- cachc favico
+
+#### Keywords
+
+we need to add a hover explain what is green and issues buttons and how to manage the green define
+
 
 ---
 

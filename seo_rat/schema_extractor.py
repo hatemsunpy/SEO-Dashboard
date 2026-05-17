@@ -13,7 +13,7 @@ from .models import Website
 from .content_mapper import map_all_urls_to_files, fetch_sitemap_urls
 
 # %% ../nbs/14_schema_extractor.ipynb #9fa5f0bb
-from .gsc_storage import get_top_queries
+from .gsc.queries import get_top_queries
 from .article import get_articles_by_website
 from .gsc_client import get_date_range
 

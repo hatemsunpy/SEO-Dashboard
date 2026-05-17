@@ -33,6 +33,9 @@ dependencies = [
     "python-fasthtml>=0.13.3",
     "trafilatura>=2.0.0",
     "html2text>=2025.4.15",
+    "fhdaisy>=0.0.1",
+    "pycountry>=26.2.16",
+    "dspy>=2.6.0",
 ]
 
 [project.urls]
@@ -60,6 +63,9 @@ seo-rat-compare = "seo_rat.cli:seo_rat_compare"
 seo-rat-country-breakdown = "seo_rat.cli:seo_rat_country_breakdown"
 seo-rat-schema-check = "seo_rat.cli:seo_rat_schema_check"
 seo-rat-faq = "seo_rat.cli:seo_rat_faq"
+seo-rat-add-tracked-keyword = "seo_rat.cli:seo_rat_add_tracked_keyword"
+seo-rat-list-tracked-keywords = "seo_rat.cli:seo_rat_list_tracked_keywords"
+seo-rat-delete-tracked-keyword = "seo_rat.cli:seo_rat_delete_tracked_keyword"
 
 [project.entry-points.nbdev]
 seo_rat = "seo_rat._modidx:d"

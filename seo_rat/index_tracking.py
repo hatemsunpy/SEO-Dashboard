@@ -19,10 +19,10 @@ import time
 from .sqlite_db import get_session
 
 # %% ../nbs/06_index_tracking.ipynb #db5cae1f
-def inspect_url_status(auth:GSCAuth,   # Authenticated GSCAuth instance
-                       site_url:str,   # GSC property URL
-                       page_url:str    # Page URL to inspect
-                      ) -> dict:
+def inspect_url_status(auth: GSCAuth,  # Authenticated GSCAuth instance
+                       site_url: str,  # GSC property URL
+                       page_url: str  # Page URL to inspect
+                       ) -> dict:
     "Inspect URL indexing status from Google Search Console."
     service = build("searchconsole", "v1", credentials=auth.get_credentials())
     response = service.urlInspection().index().inspect(
@@ -37,11 +37,11 @@ def inspect_url_status(auth:GSCAuth,   # Authenticated GSCAuth instance
 
 
 # %% ../nbs/06_index_tracking.ipynb #4e7493ca
-def store_index_status(session:Session, # Active database session
-                       auth:GSCAuth,    # Authenticated GSCAuth instance
-                       site_url:str,    # GSC property URL
-                       page_url:str     # Page URL to inspect and store
-                      ) -> None:
+def store_index_status(session: Session,  # Active database session
+                       auth: GSCAuth,  # Authenticated GSCAuth instance
+                       site_url: str,  # GSC property URL
+                       page_url: str  # Page URL to inspect and store
+                       ) -> None:
     "Inspect and store URL index status as a new history row."
     record = IndexStatus(site_url=site_url, page_url=page_url,
                          **inspect_url_status(auth, site_url, page_url))
@@ -50,10 +50,10 @@ def store_index_status(session:Session, # Active database session
 
 
 # %% ../nbs/06_index_tracking.ipynb #e7b6358d
-def get_index_status(session:Session,       # Active database session
-                     site_url:str,          # GSC property URL
-                     verdict:str|None=None  # Optional verdict to filter by
-                    ) -> list[IndexStatus]:
+def get_index_status(session: Session,  # Active database session
+                     site_url: str,  # GSC property URL
+                     verdict: str | None = None  # Optional verdict to filter by
+                     ) -> list[IndexStatus]:
     "Get latest index status per page, optionally filtered by verdict."
     from sqlalchemy import func
     latest = (select(IndexStatus.page_url, func.max(IndexStatus.checked_at).label("max_checked"))
@@ -67,16 +67,16 @@ def get_index_status(session:Session,       # Active database session
 
 
 # %% ../nbs/06_index_tracking.ipynb #d4022577
-def get_not_indexed_pages(session:Session, # Active database session
-                          site_url:str     # GSC property URL
-                         ) -> list[IndexStatus]:
+def get_not_indexed_pages(session: Session,  # Active database session
+                          site_url: str  # GSC property URL
+                          ) -> list[IndexStatus]:
     "Get pages whose latest index status is not PASS."
     return [p for p in get_index_status(session, site_url) if p.verdict != "PASS"]
 
 
 # %% ../nbs/06_index_tracking.ipynb #6545d5a7
-def get_not_indexed_by_reason(session:Session, # Active database session
-                               site_url:str    # GSC property URL
+def get_not_indexed_by_reason(session: Session,  # Active database session
+                              site_url: str  # GSC property URL
                               ) -> dict[str, list[IndexStatus]]:
     "Group not-indexed pages by their coverage state reason."
     from collections import defaultdict
@@ -86,19 +86,22 @@ def get_not_indexed_by_reason(session:Session, # Active database session
     return dict(grouped)
 
 # %% ../nbs/06_index_tracking.ipynb #73794973
-def fetch_sitemap_urls(sitemap_url:str # URL of the sitemap XML
-                      ) -> list[str]:
-    "Fetch all page URLs from a sitemap XML."
-    soup = BeautifulSoup(httpx.get(sitemap_url).text, "xml")
-    return [loc.text for loc in soup.find_all("loc")]
+def fetch_sitemap_urls(sitemap_url: str  # URL of the sitemap XML
+                       ) -> list[str]:
+    "Fetch all page URLs from a sitemap XML. Returns empty list on connection error."
+    try:
+        soup = BeautifulSoup(httpx.get(sitemap_url, timeout=30).text, "xml")
+        return [loc.text for loc in soup.find_all("loc")]
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPStatusError):
+        return []
 
 
 # %% ../nbs/06_index_tracking.ipynb #f514af6b
-def store_all_index_status(session:Session,   # Active database session
-                           auth:GSCAuth,      # Authenticated GSCAuth instance
-                           site_url:str,      # GSC property URL
-                           sitemap_url:str    # URL of the sitemap to process
-                          ) -> dict:
+def store_all_index_status(session: Session,  # Active database session
+                           auth: GSCAuth,  # Authenticated GSCAuth instance
+                           site_url: str,  # GSC property URL
+                           sitemap_url: str  # URL of the sitemap to process
+                           ) -> dict:
     "Check and store index status for all pages in a sitemap."
     urls = fetch_sitemap_urls(sitemap_url)
     results = {"successful": [], "failed": []}
@@ -113,9 +116,9 @@ def store_all_index_status(session:Session,   # Active database session
     return results
 
 # %% ../nbs/06_index_tracking.ipynb #29f908d4
-def get_index_history(session:Session, # Active database session
-                      page_url:str     # Page URL to look up
-                     ) -> list[IndexStatus]:
+def get_index_history(session: Session,  # Active database session
+                      page_url: str  # Page URL to look up
+                      ) -> list[IndexStatus]:
     "Get full index status history for a page, newest first."
     return session.exec(
         select(IndexStatus).where(IndexStatus.page_url == page_url)

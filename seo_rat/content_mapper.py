@@ -99,7 +99,7 @@ def build_slug_index(base_path: str  # Local base directory
 
 
 # %% ../nbs/08_content_mapper.ipynb #4b16207c
-from .gsc_storage import normalize_url
+from .gsc.filters import normalize_url
 
 
 def map_all_urls_to_files(base_path: str,  # Local base directory
