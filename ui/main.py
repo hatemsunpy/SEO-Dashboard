@@ -2460,7 +2460,8 @@ def report_content(id: int, refresh: bool = False, export: str = ""):
 
 
 def _run_report(id: int, is_quarto: bool):
-    def cb(pct: int, msg: str):
+    def cb(current: int, total: int, msg: str):
+        pct = int(current / total * 100) if total else 0
         _report_progress[id] = {"status": "running", "pct": pct, "msg": msg}
     with get_session() as session:
         website = session.get(Website, id)
@@ -2646,7 +2647,11 @@ def edit_mapper(id: int):
                      cls="textarea textarea-bordered font-mono text-xs w-full mb-4",
                      rows=20, style="min-height:400px"),
             Input(type="hidden", name="mode", value="local"),
-            Button("Save & Regenerate Report", type="submit", cls="btn btn-primary"),
+            Div(cls="flex gap-2")(
+                Button("Save & Regenerate Report", type="submit", cls="btn btn-primary"),
+                A("Reset Setup", href=delete_mapper.to(id=id), cls="btn btn-ghost",
+                  onclick="return confirm('Reset mapper setup? This will delete the current mapper file and let you re-choose.')"),
+            ),
         ),
     )
 
@@ -2666,6 +2671,19 @@ def save_mapper(id: int, domain: str, code: str, mode: str = "local"):
         session.commit()
     return RedirectResponse(f"/report?id={id}", status_code=303)
 
+
+@rt
+def delete_mapper(id: int):
+    with get_session() as session:
+        website = session.get(Website, id)
+        if website:
+            domain = website.url.removeprefix("https://").removeprefix("http://").rstrip("/")
+            mapper_path = Path.home() / ".config" / "seo_rat" / "mappers" / domain / "mapper.py"
+            if mapper_path.exists():
+                mapper_path.unlink()
+    _report_cache.pop(id, None)
+    REPORT_CACHE_DIR.joinpath(f"{id}.json").unlink(missing_ok=True)
+    return RedirectResponse(f"/report?id={id}", status_code=303)
 
 
 @rt
@@ -3017,4 +3035,4 @@ def settings_test_gsc(GOOGLE_CLIENT_ID: str = "", GOOGLE_CLIENT_SECRET: str = ""
         )
 
 
-serve(port=5002)
+serve(port=5003)

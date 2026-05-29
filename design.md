@@ -7,7 +7,100 @@ not WordPress.
 
 ---
 
-## ✅ Shipped
+## 🔄 In Progress
+
+## Integerations with other systems
+
+- Wordpress
+- Salaa
+- Wuilt
+- shopfiy
+- odoo system
+
+### Keyword Intelligence
+
+- [ ] smart missing queries filter
+  - use dspy signature
+  - cache the answers if they are not changed
+
+- [ ] Fuzzy keyword matching (`LIKE`) for `keyword_ranking`
+- [ ] DSPy filter for cannibalization noise reduction
+
+### On-Page Technical SEO
+
+- [ ] Canonical tag detection
+- [ ] Meta robots / noindex detection
+- [ ] Hreflang tags
+
+### PageSpeed support
+
+- support PageSpeed for performance and errors suggestion into the report
+- store them in a database for reports
+
+### Content Enhancements
+
+- [ ] Alt text suggestions
+- [ ] Broken link detection (async httpx 404 checks)
+- [ ] Manual focus keyword input + automatic secondary keyword assignment (needs UI)
+
+---
+
+## 📋 Backlog
+
+### Medium Priority
+
+- [ ] Internal linking suggestions (embedding-based)
+- [ ] Social meta (OpenGraph, Twitter Cards)
+- [ ] llms.txt generator
+
+### Lower Priority
+
+- [ ] Full content near-duplicate detection (MinHash already in place)
+- [ ] NLP FAQ extraction (DSPy)
+- [ ] Image uniqueness / compression / lazy loading checks
+- [ ] PageSpeed tracking per page
+- [ ] Email SEO reports (weekly/monthly)
+- [ ] robots.txt / noindex controls
+
+### Schema
+
+- [ ] Competitor schema analysis (browser extension — needs $5 store fee)
+
+### Web App (FastHTML)
+
+- [ ] Backlink checker
+- [ ] Site explorer
+
+---
+
+## 🔮 Future / Ideas
+
+- LLM-powered per-page improvement suggestions
+- BERT query intent classifier
+- Agentic orchestrator (plan + execute)
+- GSC seasonal/YoY trend analysis
+- Bing integration (IndexNow + Bing AI trends)
+- MCP / Agent Skill integration
+- How do Ahrefs/SEMrush get domain visitor data?
+- How to build PC from scratch
+
+---
+
+## 📝 Known Issues
+
+- Some keywords don't match page topic (e.g. `sbak-baldwadmy`)
+- Two pages share keyword: شركة عزل بولي يوريا بجدة → cannibalization case
+
+---
+
+## 🏷️ Outreach
+
+- [ ] Share with Sherno
+- [ ] Ask Jeremy (fast.ai) for feedback
+- [ ] Blog post about SEO RAT
+- [ ] Test with fast.ai Quarto blog
+
+## ✅ Shipped (Archive)
 
 ### Infrastructure
 
@@ -46,7 +139,7 @@ not WordPress.
 - [x] Not-indexed pages with coverage reasons
 - [x] Index status history over time
 
-### CLI
+### CLI (16 commands)
 
 - [x] `seo-rat-sync`
 - [x] `seo-rat-report`
@@ -71,102 +164,12 @@ not WordPress.
 - [x] HTML fallback via `::fetch::` sentinel
 - [x] Tested: kareemai.com, awazly.com, shelid.com, emdadelgaz.com, alainclean.com, smaagarden.com
 
----
-
-## 🔄 In Progress
-
-### Keyword Intelligence
-
-- [ ] Fuzzy keyword matching (`LIKE`) for `keyword_ranking`
-- [ ] DSPy filter for cannibalization noise reduction
-
-### On-Page Technical SEO
-
-- [ ] Canonical tag detection
-- [ ] Meta robots / noindex detection
-- [ ] Hreflang tags
-
-### Schema
-
-- How to build PC from scratch
-- [ ] Page-needed schema prediction (DSPy agent)
-- [x] Competitor schema analysis (browser extension — needs $5 store fee)
-    - I just need to publish it
-
----
-
-## 📋 Backlog
-
-### High Priority
-
-1. [ ] Alt text suggestions
-2. [ ] Broken link detection (async httpx 404 checks)
-    3. low priority
-4. [ ] Manual focus keyword input + automatic secondary keyword assignment (needs UI)
-
-### Medium Priority
-
-5. [ ] Internal linking suggestions (embedding-based)
-6. [ ] Social meta (OpenGraph, Twitter Cards)
-7. [x] llms.txt generator
-
-### Lower Priority
-
-9. [ ] Full content near-duplicate detection (MinHash already in place)
-10. [ ] NLP FAQ extraction (DSPy)
-11. [ ] Image uniqueness / compression / lazy loading checks
-12. [ ] PageSpeed tracking per page
-13. [ ] Email SEO reports (weekly/monthly)
-14. [ ] robots.txt / noindex controls
-
----
-
-## 🌐 Web App (FastHTML)
+### Web App (FastHTML)
 
 - [x] Add/manage websites UI
 - [x] Data sync UI
 - [x] Article CRUD
 - [x] SERPWatcher
-- [ ] Backlink checker
-- [ ] Site explorer
-- [ ] SEO Report
-
-### Implementatino
-
-#### HomePage
-
-- cachc favico
-
-#### Keywords
-
-we need to add a hover explain what is green and issues buttons and how to manage the green define
-
+- [x] SEO Report (with caching + parallel fetch)
 
 ---
-
-## 🔮 Future / Ideas
-
-- LLM-powered per-page improvement suggestions
-- BERT query intent classifier
-- Agentic orchestrator (plan + execute)
-- GSC seasonal/YoY trend analysis
-- Bing integration (IndexNow + Bing AI trends)
-- MCP / Agent Skill integration
-- How do Ahrefs/SEMrush get domain visitor data?
-
----
-
-## 📝 Known Issues
-
-- Some keywords don't match page topic (e.g. `sbak-baldwadmy`)
-- Two pages share keyword: شركة عزل بولي يوريا بجدة → cannibalization case
-
----
-
-## 🏷️ Outreach
-
-- [ ] Share with Sherno
-- [ ] Ask Jeremy (fast.ai) for feedback
-- [ ] Blog post about SEO RAT
-- [ ] Test with fast.ai Quarto blog
-  s
