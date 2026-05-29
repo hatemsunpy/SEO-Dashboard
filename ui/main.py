@@ -2,8 +2,11 @@ from fasthtml.common import *
 from fhdaisy import *
 from fhdaisy.core import daisy_hdrs
 from seootter.sqlite_db import get_session
-from seootter.models import Website, GSCAnalytics, add_or_update_website, TrackedKeyword, add_tracked_keyword, delete_tracked_keyword, get_tracked_keywords, get_url_mapping, sync_url_mapping
-from seootter.gsc.queries import get_top_pages, get_top_queries, get_wins, get_country_breakdown, get_trends
+from seootter.models import Website, GSCAnalytics, add_or_update_website, TrackedKeyword, add_tracked_keyword, delete_tracked_keyword, get_tracked_keywords, get_url_mapping, sync_url_mapping, WuiltStore, WuiltProduct, WuiltPage, add_or_update_wuilt_store, delete_wuilt_store, get_wuilt_products, get_wuilt_pages, print_wuilt_stores, print_wuilt_products, print_wuilt_pages
+from seootter.wuilt.sync import sync_wuilt_products, sync_wuilt_pages, sync_wuilt_store
+from seootter.wuilt.client import WuiltClient
+from seootter.wuilt.optimizer import batch_optimize_products, optimize_and_push, optimize_product
+from seootter.gsc.queries import get_top_pages, get_top_queries, get_wins, get_country_breakdown, get_trends, get_page_analytics
 from seootter.gsc.sync import get_missing_dates, store_single_date
 from seootter.gsc_client import GSCAuth, get_date_range, get_verified_sites
 from seootter.insights.trends import detect_query_trends
@@ -17,7 +20,7 @@ from seootter.report.generator import generate_seo_report
 from seootter.article import Article, insert_article
 from seootter.dspy_infer import infer_article_seo, get_article_content, predict_schemas
 import importlib.util
-import json
+import json, re
 import pycountry
 from dotenv import load_dotenv
 from sqlmodel import select, func
@@ -287,6 +290,9 @@ def _sidebar():
         )),
         Li(A(href="/settings", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
             Span("⚙️", cls="text-lg"), Span("Settings"),
+        )),
+        Li(A(href="/wuILT", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
+            Span("🏪", cls="text-lg"), Span("Wuilt Stores"),
         )),
     )
 
@@ -3033,6 +3039,628 @@ def settings_test_gsc(GOOGLE_CLIENT_ID: str = "", GOOGLE_CLIENT_SECRET: str = ""
         return Div(cls="text-error text-sm")(
             Span(f"✗ {e}"),
         )
+
+
+# ── Wuilt Store Management ────────────────────────────────────────
+
+@rt("/wuILT")
+def wuilt_list():
+    with get_session() as session:
+        stores = session.exec(select(WuiltStore)).all()
+        return Title("Wuilt Stores"), Main(cls="container")(
+            H1("Wuilt Stores", cls="text-2xl font-bold mb-4"),
+            A("+ Add Store", href="/wuILT/add", cls="btn btn-primary btn-sm mb-4"),
+            Div(cls="overflow-x-auto")(
+                Table(cls="table table-zebra")(
+                    Thead(Tr(Th("ID"), Th("Name"), Th("Store ID"), Th("Locale"), Th("Domain"), Th("Actions"))),
+                    Tbody(*[
+                        Tr(
+                            Td(str(s.id)),
+                            Td(s.name),
+                            Td(s.store_id),
+                            Td(s.locale),
+                            Td(s.store_domain or "—"),
+                            Td(Div(cls="flex gap-1")(
+                                A("View", href=f"/wuILT/{s.id}", cls="btn btn-xs btn-soft btn-primary"),
+                                A("Edit", href=f"/wuILT/{s.id}/edit", cls="btn btn-xs btn-soft"),
+                                A("Sync", href=f"/wuILT/{s.id}/sync", cls="btn btn-xs btn-soft btn-secondary"),
+                                Form(method="post", action=f"/wuILT/{s.id}/delete", cls="inline")(
+                                    Btn("Delete", cls="-error -xs", type="submit"),
+                                ),
+                            )),
+                        ) for s in stores
+                    ]) if stores else Tr(Td("No stores yet.", colspan="6")),
+            ),
+        ),
+    )
+
+
+@rt("/wuILT/{store_pk:int}")
+def wuilt_store(store_pk: int):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        if not store:
+            return Titled("Store not found", P("Store not found"))
+        products = get_wuilt_products(session, store_pk)
+        pages = get_wuilt_pages(session, store_pk)
+        website = None
+        site_url = None
+        base_url = None
+        store_metrics = None
+        if store.website_id:
+            website = session.get(Website, store.website_id)
+        if not website and store.store_domain:
+            raw = store.store_domain.replace("https://", "").replace("http://", "").rstrip("/")
+            for loc in ("/ar", "/en"):
+                if raw.endswith(loc):
+                    raw = raw[: -len(loc)]
+                    break
+            website = session.exec(select(Website).where(Website.url.contains(raw))).first()
+        if website:
+            domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
+            site_url = f"sc-domain:{domain}"
+            base_url = website.url.rstrip("/")
+            store_metrics = get_site_metrics(session, site_url, days=30)
+        elif store.store_domain:
+            base_url = _store_base_url(store)
+            raw_domain = base_url.replace("https://", "")
+            site_url = f"sc-domain:{raw_domain}"
+            store_metrics = get_site_metrics(session, site_url, days=30)
+    return Title(store.name), Main(cls="container")(
+        A("← All Stores", href="/wuILT", cls="link link-primary mb-4"),
+        Div(cls="flex items-center justify-between mb-4")(
+            H1(store.name, cls="text-2xl font-bold"),
+            Div(cls="flex gap-2")(
+                A("Edit", href=f"/wuILT/{store_pk}/edit", cls="btn btn-sm btn-outline"),
+                A("Sync Products", href=f"/wuILT/{store_pk}/sync", cls="btn btn-sm btn-outline btn-primary"),
+                A("Sync Pages", href=f"/wuILT/{store_pk}/sync-pages", cls="btn btn-sm btn-outline btn-secondary"),
+                A("Optimize All", href=f"/wuILT/{store_pk}/optimize", cls="btn btn-sm btn-primary"),
+            ),
+        ),
+        Div(cls="stats shadow mb-6")(
+            Div(cls="stat")(
+                Div("Store ID", cls="stat-title"),
+                Div(store.store_id, cls="stat-value text-sm"),
+            ),
+            Div(cls="stat")(
+                Div("Locale", cls="stat-title"),
+                Div(store.locale, cls="stat-value text-sm"),
+            ),
+            Div(cls="stat")(
+                Div("Domain", cls="stat-title"),
+                Div(store.store_domain or "—", cls="stat-value text-sm"),
+            ),
+        ),
+        Div(cls="alert alert-soft mb-4")(
+            Span("Linked to Website: "),
+            A(website.name or website.url, href=site.to(id=website.id), cls="link link-primary font-medium") if website and store.website_id
+            else Span(f"Using store_domain: {store.store_domain}" if store.store_domain else "No domain configured — set store_domain or link a Website for GSC integration.", cls="text-base-content/60"),
+            Span("📊", cls="text-lg ml-auto"),
+        ) if (website or store.store_domain or not store.website_id) else "",
+        Details(cls="card card-border bg-base-100 mb-6" + (" " if store_metrics else ""),
+                **({"open": "true"} if store_metrics else {}))(
+            Summary(cls="card-body cursor-pointer list-none [&::-webkit-details-marker]:hidden")(
+                Div(cls="flex items-center justify-between")(
+                    H2("GSC Performance (30d)", cls="card-title text-lg"),
+                    Span("▼", cls="text-base-content/40 transition-transform [[open]_&]:rotate-180"),
+                ),
+            ),
+            Div(cls="card-body pt-0")(
+                Div(cls="stats shadow")(
+                    Div(cls="stat")(
+                        Div("Clicks", cls="stat-title"),
+                        Div(f"{store_metrics['clicks']:,}" if store_metrics else "—", cls="stat-value"),
+                    ),
+                    Div(cls="stat")(
+                        Div("Impressions", cls="stat-title"),
+                        Div(f"{store_metrics['impressions']:,}" if store_metrics else "—", cls="stat-value"),
+                    ),
+                    Div(cls="stat")(
+                        Div("Avg Position", cls="stat-title"),
+                        Div(f"{store_metrics['avg_position']}" if store_metrics else "—", cls="stat-value"),
+                    ),
+                    Div(cls="stat")(
+                        Div("Avg CTR", cls="stat-title"),
+                        Div(f"{store_metrics['avg_ctr']}%" if store_metrics else "—", cls="stat-value"),
+                    ),
+                ) if store_metrics else P("No GSC data synced yet. Sync GSC data from the linked Website dashboard first.", cls="text-sm text-base-content/60"),
+            ),
+        ) if site_url else "",
+        H2(f"Products ({len(products)})", cls="text-lg font-semibold mb-3"),
+        Div(cls="overflow-x-auto mb-8")(
+            Table(cls="table table-zebra")(
+                Thead(Tr(Th("Title"), Th("Handle"), Th("Price"), Th("Optimized"), Th("GSC"), Th("Schema"), Th("Synced"))),
+                Tbody(*[
+                    Tr(
+                        Td(p.title, cls="font-medium"),
+                        Td(p.handle, cls="text-sm text-base-content/60"),
+                        Td(f"{p.price:.2f}" if p.price is not None else "—"),
+                        Td(
+                            Span("✅", cls="text-success", title=f"Optimized {p.last_optimized_at.strftime('%Y-%m-%d %H:%M')}") if p.last_optimized_at
+                            else A("✨", href="#", cls="btn btn-xs btn-ghost",
+                                   hx_get=f"/wuILT/{store_pk}/product-optimize/{p.id}",
+                                   hx_target="#wuilt-modal-content",
+                                   hx_swap="innerHTML",
+                                   title="Optimize SEO for this product"),
+                        ),
+                        Td(
+                            A("📊", href="#", cls="btn btn-xs btn-ghost",
+                              hx_get=f"/wuILT/{store_pk}/product-gsc/{p.id}",
+                              hx_target="#wuilt-modal-content",
+                              hx_swap="innerHTML",
+                              title="View GSC analytics for this product") if base_url
+                            else Span("—", cls="text-base-content/30", title="Set store_domain or link a Website to enable GSC"),
+                        ),
+                        Td(
+                            A("🔍", href="#", cls="btn btn-xs btn-ghost",
+                              hx_get=f"/wuILT/{store_pk}/product-schema/{p.id}",
+                              hx_target="#wuilt-modal-content",
+                              hx_swap="innerHTML",
+                              title="Validate schema & predict schemas"),
+                        ),
+                        Td(p.synced_at.strftime("%Y-%m-%d") if p.synced_at else "—", cls="text-sm text-base-content/60"),
+                    ) for p in products
+                ]) if products else Tr(Td("No products synced yet.", colspan="7")),
+            ),
+        ),
+        H2(f"Pages ({len(pages)})", cls="text-lg font-semibold mb-3"),
+        Div(cls="overflow-x-auto")(
+            Table(cls="table table-zebra")(
+                Thead(Tr(Th("Name"), Th("Handle"), Th("Type"), Th("Status"), Th("SEO Title"))),
+                Tbody(*[
+                    Tr(
+                        Td(p.name),
+                        Td(p.handle, cls="text-sm text-base-content/60"),
+                        Td(p.page_type, cls="text-sm"),
+                        Td(Span(p.status, cls="badge badge-soft badge-sm " + ("badge-success" if p.status == "PUBLISHED" else "badge-ghost"))),
+                        Td(p.seo_title or "—", cls="text-sm"),
+                    ) for p in pages
+                ]) if pages else Tr(Td("No pages synced yet.", colspan="5")),
+            ),
+        ),
+        Dialog(id="wuilt-modal", cls="modal")(
+            Div(cls="modal-box max-w-3xl")(
+                Div(cls="flex justify-end")(
+                    Form(method="dialog")(Button("✕", cls="btn btn-sm btn-circle btn-ghost")),
+                ),
+                Div(id="wuilt-modal-content"),
+            ),
+            Form(method="dialog", cls="modal-backdrop")(Button("close")),
+        ),
+    )
+
+
+def _store_base_url(store) -> str:
+    """Build clean base URL from store_domain, stripping any locale path to avoid duplication."""
+    raw = store.store_domain or ""
+    raw = raw.replace("https://", "").replace("http://", "").rstrip("/")
+    for loc in ("/ar", "/en"):
+        if raw.endswith(loc):
+            raw = raw[: -len(loc)]
+            break
+    return f"https://{raw}"
+
+
+@rt("/wuILT/{store_pk:int}/product-gsc/{pid:int}")
+def wuilt_product_gsc(store_pk: int, pid: int):
+    try:
+        with get_session() as session:
+            store = session.get(WuiltStore, store_pk)
+            product = session.get(WuiltProduct, pid)
+            if not store or not product or product.wuilt_store_id != store_pk:
+                return Div(cls="alert alert-error")(Span("Product not found"))
+            website = session.get(Website, store.website_id) if store.website_id else None
+            if not website and store.store_domain:
+                raw = store.store_domain.replace("https://", "").replace("http://", "").rstrip("/")
+                for loc in ("/ar", "/en"):
+                    if raw.endswith(loc):
+                        raw = raw[: -len(loc)]
+                        break
+                website = session.exec(select(Website).where(Website.url.contains(raw))).first()
+            if website:
+                domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
+                site_url = f"sc-domain:{domain}"
+            elif store.store_domain:
+                base = _store_base_url(store)
+                domain = base.replace("https://", "")
+                site_url = f"sc-domain:{domain}"
+            else:
+                return Div(cls="alert alert-warning")(Span("Set store_domain or link a Website to enable GSC."))
+            product_url = f"{_store_base_url(store)}/{store.locale}/product/all/{product.handle}"
+            start, end = get_date_range("last_days", days=30)
+            analytics = get_page_analytics(session, site_url, product_url, start, end)
+            queries = get_top_queries(session, site_url, start, end, page_path=product_url, limit=10)
+            faq_queries = extract_faq_queries(queries)
+    except Exception as e:
+        return Div(cls="alert alert-error")(Span(f"Error: {e}"))
+    return Div(cls="card card-border bg-base-100 shadow-sm mb-4")(
+        Div(cls="card-body")(
+            Div(cls="flex items-start justify-between")(
+                H3(product.title, cls="card-title text-base"),
+                A(product_url, href=product_url, target="_blank", cls="link link-primary text-xs truncate max-w-64"),
+            ),
+            Div(cls="stats shadow-sm mt-2")(
+                Div(cls="stat py-2")(
+                    Div("Clicks", cls="stat-title text-xs"),
+                    Div(f"{analytics['total_clicks']:,}", cls="stat-value text-lg"),
+                ),
+                Div(cls="stat py-2")(
+                    Div("Impr", cls="stat-title text-xs"),
+                    Div(f"{analytics['total_impressions']:,}", cls="stat-value text-lg"),
+                ),
+                Div(cls="stat py-2")(
+                    Div("Pos", cls="stat-title text-xs"),
+                    Div(f"{analytics['avg_position']:.1f}", cls="stat-value text-lg"),
+                ),
+                Div(cls="stat py-2")(
+                    Div("CTR", cls="stat-title text-xs"),
+                    Div(f"{analytics['avg_ctr']*100:.1f}%" if analytics['avg_ctr'] else "0%", cls="stat-value text-lg"),
+                ),
+            ),
+            H4(f"Top Queries ({len(queries)})", cls="text-sm font-semibold mt-3 mb-1"),
+            Div(cls="overflow-x-auto")(
+                Table(cls="table table-xs")(
+                    Thead(Tr(Th("Query", cls="text-xs"), Th("Clicks", cls="text-xs"), Th("Impr", cls="text-xs"), Th("Pos", cls="text-xs"), Th("CTR", cls="text-xs"))),
+                    Tbody(*[
+                        Tr(
+                            Td(q["query"], cls="text-xs max-w-40 truncate"),
+                            Td(f"{q['total_clicks']:,}", cls="text-xs"),
+                            Td(f"{q['total_impressions']:,}", cls="text-xs"),
+                            Td(f"{q['avg_position']:.1f}", cls="text-xs"),
+                            Td(f"{q['avg_ctr']*100:.1f}%", cls="text-xs"),
+                        ) for q in queries
+                    ]) if queries else Tr(Td("No queries found", colspan="5", cls="text-xs")),
+                ),
+            ),
+            Div(cls="mt-2")(
+                Span("❓ FAQ Opportunities: ", cls="text-xs font-semibold"),
+                Span(str(len(faq_queries)), cls="text-xs"),
+                Ul(*[Li(q, cls="text-xs") for q in faq_queries], cls="list-disc list-inside mt-1") if faq_queries else Span(" None", cls="text-xs text-base-content/60"),
+            ),
+        ),
+    ) + Script("document.getElementById('wuilt-modal').showModal()")
+
+
+@rt("/wuILT/{store_pk:int}/product-schema/{pid:int}")
+def wuilt_product_schema(store_pk: int, pid: int):
+    try:
+        with get_session() as session:
+            store = session.get(WuiltStore, store_pk)
+            product = session.get(WuiltProduct, pid)
+            if not store or not product or product.wuilt_store_id != store_pk:
+                return Div(cls="alert alert-error")(Span("Product not found"))
+            website = session.get(Website, store.website_id) if store.website_id else None
+            if not website and store.store_domain:
+                raw = store.store_domain.replace("https://", "").replace("http://", "").rstrip("/")
+                for loc in ("/ar", "/en"):
+                    if raw.endswith(loc):
+                        raw = raw[: -len(loc)]
+                        break
+                website = session.exec(select(Website).where(Website.url.contains(raw))).first()
+            if not website and not store.store_domain:
+                return Div(cls="alert alert-warning")(Span("Set store_domain or link a Website."))
+        product_url = f"{_store_base_url(store)}/{store.locale}/product/all/{product.handle}"
+        validation = validate_page(product_url)
+        text_content = re.sub(r"<[^>]+>", "", product.description_html or "") if product.description_html else ""
+        content = f"{product.title}\n{text_content[:2000]}"
+        predictions = predict_schemas(content) if content.strip() else {"suggestions": [], "reasoning": "No content"}
+    except Exception as e:
+        return Div(cls="alert alert-error")(Span(f"Schema check failed: {e}"))
+    return Div(cls="card card-border bg-base-100 shadow-sm mb-4")(
+        Div(cls="card-body")(
+            Div(cls="flex items-start justify-between")(
+                H3("🔍 Schema Analysis", cls="card-title text-base"),
+                Span(product.title, cls="text-sm text-base-content/60"),
+            ),
+            H4("Validation", cls="text-sm font-semibold mt-2 mb-1"),
+            Div(cls="stats shadow-sm")(
+                Div(cls="stat py-2")(
+                    Div("Status", cls="stat-title text-xs"),
+                    Div(Span("✅ Fetched" if validation.get("fetch_status") == 200 else f"❌ HTTP {validation.get('fetch_status', 'error')}", cls="text-sm")),
+                ),
+                Div(cls="stat py-2")(
+                    Div("Schemas", cls="stat-title text-xs"),
+                    Div(str(validation["summary"]["total_schemas"]), cls="stat-value text-lg"),
+                ),
+                Div(cls="stat py-2")(
+                    Div("Valid", cls="stat-title text-xs"),
+                    Div(f"{validation['summary']['valid_count']}/{validation['summary']['total_schemas']}", cls="stat-value text-sm " + ("text-success" if validation['summary']['valid_count'] == validation['summary']['total_schemas'] else "text-warning")),
+                ),
+            ),
+            Div(cls="mt-2 space-y-1")(
+                *[Div(cls="flex items-center gap-2 text-xs")(
+                    Span("✅" if s["google_supported"] else "⚠️", cls="text-sm"),
+                    Span(s["type"], cls="font-medium"),
+                    Span("Google Supported" if s["google_supported"] else "Unknown type", cls="text-base-content/60"),
+                    Span("✓ Valid" if s["is_valid"] else "✗ Issues", cls=("text-success" if s["is_valid"] else "text-error")),
+                ) for s in validation.get("schemas_found", [])],
+            ) if validation.get("schemas_found") else P("No structured data found.", cls="text-xs text-warning mt-1"),
+            H4("🧠 Schema Predictions", cls="text-sm font-semibold mt-3 mb-1"),
+            Div(cls="flex flex-wrap gap-2")(
+                *[Span(f"{s['type']}: {s['score']}%", cls="badge badge-sm " + ("badge-primary" if s['score'] >= 70 else "badge-soft")) for s in predictions.get("suggestions", [])],
+            ) if predictions.get("suggestions") else P("No predictions available.", cls="text-xs text-base-content/60"),
+            P(predictions.get("reasoning", ""), cls="text-xs text-base-content/50 mt-1 italic"),
+            Div(cls="mt-2")(
+                A("View Live Page", href=product_url, target="_blank", cls="link link-primary text-xs"),
+            ),
+        ),
+    ) + Script("document.getElementById('wuilt-modal').showModal()")
+
+
+@rt("/wuILT/{store_pk:int}/product-optimize/{pid:int}")
+def wuilt_product_optimize(store_pk: int, pid: int):
+    try:
+        with get_session() as session:
+            store = session.get(WuiltStore, store_pk)
+            product = session.get(WuiltProduct, pid)
+            if not store or not product or product.wuilt_store_id != store_pk:
+                return Div(cls="alert alert-error")(Span("Product not found"))
+        optimized = optimize_product(
+            product_title=product.title,
+            description_html=product.description_html or "",
+            short_description=product.short_description or "",
+            language=store.locale,
+        )
+    except Exception as e:
+        return Div(cls="alert alert-error")(Span(f"DSPy generation failed: {e}"))
+    return Div(
+        H3(f"✨ Optimize SEO — {product.title}", cls="text-lg font-bold mb-4"),
+        Form(
+            Fieldset(FieldsetLegend("SEO Title"),
+                Input(name="seo_title", value=optimized["seo_title"], cls="input w-full")),
+            Fieldset(FieldsetLegend("SEO Description"),
+                Textarea(optimized["seo_description"], name="seo_description", cls="textarea w-full", rows=3)),
+            Fieldset(FieldsetLegend("Description HTML"),
+                Textarea(optimized["optimized_description_html"], name="description_html", cls="textarea w-full font-mono text-xs", rows=6)),
+            Fieldset(FieldsetLegend("Short Description"),
+                Textarea(optimized["optimized_short_description"], name="short_description", cls="textarea w-full", rows=2)),
+            Input(type="hidden", name="pid", value=str(pid)),
+            Div(cls="modal-action")(
+                Form(method="dialog")(Button("Cancel", cls="btn btn-ghost")),
+                Button("Save & Push to Wuilt", cls="btn btn-primary", type="submit",
+                       hx_post=f"/wuILT/{store_pk}/product-save-seo",
+                       hx_target="#wuilt-modal-content",
+                       hx_swap="innerHTML"),
+            ),
+            action="#", method="post",
+        ),
+    ) + Script("document.getElementById('wuilt-modal').showModal()")
+
+
+@rt("/wuILT/{store_pk:int}/product-save-seo")
+def wuilt_product_save_seo(store_pk: int, seo_title: str, seo_description: str, description_html: str, short_description: str, pid: int):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        product = session.get(WuiltProduct, pid)
+        if not store or not product or product.wuilt_store_id != store_pk:
+            return Div(cls="alert alert-error")(Span("Product not found"))
+    client = WuiltClient(api_key=store.api_key, store_id=store.store_id, locale=store.locale)
+    seo_ok = False; seo_err = ""
+    desc_ok = False; desc_err = ""
+    try:
+        client.update_product_seo(
+            product_id=product.wuilt_product_id,
+            seo_title=seo_title,
+            seo_description=seo_description,
+            title=product.title,
+            handle=product.handle,
+        )
+        seo_ok = True
+    except Exception as e:
+        seo_err = str(e)
+    try:
+        client.update_product_seo(
+            product_id=product.wuilt_product_id,
+            description_html=description_html,
+            short_description=short_description,
+            title=product.title,
+            handle=product.handle,
+        )
+        desc_ok = True
+    except Exception as e:
+        desc_err = str(e)
+    with get_session() as session:
+        p = session.get(WuiltProduct, pid)
+        if p and seo_ok:
+            p.optimized_seo_title = seo_title
+            p.optimized_seo_description = seo_description
+            p.optimized_description_html = description_html
+            p.last_optimized_at = datetime.now()
+            session.commit()
+    status = []
+    if seo_ok: status.append("✅ SEO title & description")
+    else: status.append(f"❌ SEO fields failed: {seo_err}")
+    if desc_ok: status.append("✅ Description & short desc")
+    else: status.append(f"⚠️ Description skipped: {desc_err}")
+    return Div(cls="card card-border bg-base-100 shadow-sm")(
+        Div(cls="card-body")(
+            Div(cls="flex items-center gap-2")(
+                Span("✨" if seo_ok else "❌", cls="text-lg"),
+                H3(product.title, cls="card-title text-base"),
+            ),
+            Ul(*[Li(s, cls="text-xs") for s in status], cls="list-disc list-inside mt-2"),
+        ),
+    )
+
+
+@rt("/wuILT/{store_pk:int}/sync")
+def wuilt_sync_products(store_pk: int):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        if not store:
+            return Titled("Store not found", P("Store not found"))
+    result = sync_wuilt_products(store.api_key, store.store_id, store.name, store.locale)
+    return Title(f"Sync Complete - {store.name}"), Main(cls="container")(
+        A("← Back to Store", href=f"/wuILT/{store_pk}", cls="link link-primary mb-4"),
+        H1("Product Sync Complete", cls="text-2xl font-bold mb-4"),
+        Div(cls="stats shadow")(
+            Div(cls="stat")(
+                Div("Total", cls="stat-title"),
+                Div(str(result["total"]), cls="stat-value"),
+            ),
+            Div(cls="stat")(
+                Div("Created", cls="stat-title"),
+                Div(str(result["created"]), cls="stat-value text-success"),
+            ),
+            Div(cls="stat")(
+                Div("Updated", cls="stat-title"),
+                Div(str(result["updated"]), cls="stat-value text-info"),
+            ),
+        ),
+        Div(cls="mt-4")(
+            A("View Store", href=f"/wuILT/{store_pk}", cls="btn btn-primary"),
+        ),
+    )
+
+
+@rt("/wuILT/{store_pk:int}/sync-pages")
+def wuilt_sync_pages(store_pk: int):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        if not store:
+            return Titled("Store not found", P("Store not found"))
+    result = sync_wuilt_pages(store.api_key, store.store_id, store.name, store.locale)
+    return Title(f"Pages Sync Complete - {store.name}"), Main(cls="container")(
+        A("← Back to Store", href=f"/wuILT/{store_pk}", cls="link link-primary mb-4"),
+        H1("Pages Sync Complete", cls="text-2xl font-bold mb-4"),
+        Div(cls="stats shadow")(
+            Div(cls="stat")(
+                Div("Total", cls="stat-title"),
+                Div(str(result["total"]), cls="stat-value"),
+            ),
+            Div(cls="stat")(
+                Div("Created", cls="stat-title"),
+                Div(str(result["created"]), cls="stat-value text-success"),
+            ),
+            Div(cls="stat")(
+                Div("Updated", cls="stat-title"),
+                Div(str(result["updated"]), cls="stat-value text-info"),
+            ),
+        ),
+        Div(cls="mt-4")(
+            A("View Store", href=f"/wuILT/{store_pk}", cls="btn btn-primary"),
+        ),
+    )
+
+
+@rt("/wuILT/{store_pk:int}/optimize")
+def wuilt_optimize_products(store_pk: int):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        if not store:
+            return Titled("Store not found", P("Store not found"))
+
+    results = batch_optimize_products(store.api_key, store.store_id, store.locale)
+
+    with get_session() as session:
+        updated = 0
+        for r in results:
+            if "error" in r:
+                continue
+            pid = r["product_id"]
+            product = session.exec(
+                select(WuiltProduct).where(
+                    WuiltProduct.wuilt_store_id == store_pk,
+                    WuiltProduct.wuilt_product_id == pid
+                )
+            ).first()
+            if product:
+                product.optimized_seo_title = r["optimized"]["seo_title"]
+                product.optimized_seo_description = r["optimized"]["seo_description"]
+                product.optimized_description_html = r["optimized"]["optimized_description_html"]
+                product.last_optimized_at = datetime.now()
+                updated += 1
+        session.commit()
+
+    errors = [r for r in results if "error" in r]
+    return Title(f"Optimization Complete - {store.name}"), Main(cls="container")(
+        A("← Back to Store", href=f"/wuILT/{store_pk}", cls="link link-primary mb-4"),
+        H1("SEO Optimization Complete", cls="text-2xl font-bold mb-4"),
+        P(f"Products processed via DSPy and pushed to Wuilt.", cls="text-base-content/60 mb-4"),
+        Div(cls="stats shadow mb-6")(
+            Div(cls="stat")(
+                Div("Total", cls="stat-title"),
+                Div(str(len(results)), cls="stat-value"),
+            ),
+            Div(cls="stat")(
+                Div("Updated Locally", cls="stat-title"),
+                Div(str(updated), cls="stat-value text-success"),
+            ),
+            Div(cls="stat")(
+                Div("Errors", cls="stat-title"),
+                Div(str(len(errors)), cls="stat-value text-error"),
+            ),
+        ),
+        Div(cls="overflow-x-auto")(
+            Table(cls="table table-zebra")(
+                Thead(Tr(Th("Product"), Th("Status"), Th("New SEO Title"), Th("New SEO Desc"))),
+                Tbody(*[
+                    Tr(
+                        Td(r.get("title", "?")),
+                        Td(
+                            Span("✅", cls="text-success") if "error" not in r
+                            else Span(f"❌ {r['error']}", cls="text-error"),
+                        ),
+                        Td(r["optimized"]["seo_title"][:60] if "error" not in r else "—", cls="text-sm"),
+                        Td(r["optimized"]["seo_description"][:80] if "error" not in r else "—", cls="text-sm text-base-content/60"),
+                    ) for r in results
+                ]),
+            ),
+        ),
+        Div(cls="mt-4")(
+            A("View Store", href=f"/wuILT/{store_pk}", cls="btn btn-primary"),
+        ),
+    )
+
+
+@rt("/wuILT/{store_pk:int}/edit")
+def wuilt_edit_form(store_pk: int):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        if not store:
+            return Titled("Store not found", P("Store not found"))
+    return Title(f"Edit {store.name}"), Main(cls="container")(
+        A("← Back to Store", href=f"/wuILT/{store_pk}", cls="link link-primary mb-4"),
+        H1(f"Edit: {store.name}", cls="text-2xl font-bold mb-4"),
+        Form(method="post", action=f"/wuILT/{store_pk}/edit/save", cls="max-w-lg")(
+            Fieldset(FieldsetLegend("Store Name"),
+                Input(name="name", value=store.name, required=True, cls="input w-full")),
+            Fieldset(FieldsetLegend("Store ID"),
+                Input(name="store_id", value=store.store_id, required=True, cls="input w-full")),
+            Fieldset(FieldsetLegend("API Key"),
+                Input(name="api_key", type="password", placeholder="Leave blank to keep current", cls="input w-full"),
+                P("Leave blank to keep current API key.", cls="text-xs text-base-content/60 mt-1")),
+            Fieldset(FieldsetLegend("Locale"),
+                Select(
+                    Option("Arabic", value="ar", selected=(store.locale == "ar")),
+                    Option("English", value="en", selected=(store.locale == "en")),
+                    name="locale", cls="select w-full")),
+            Fieldset(FieldsetLegend("Store Domain"),
+                Input(name="store_domain", value=store.store_domain, placeholder="mystore.com", cls="input w-full")),
+            Div(cls="mt-4 flex gap-2")(
+                A("Cancel", href=f"/wuILT/{store_pk}", cls="btn btn-ghost"),
+                Btn("Save Changes", cls="-primary", type="submit"),
+            ),
+        ),
+    )
+
+
+@rt("/wuILT/{store_pk:int}/edit/save")
+def wuilt_edit_store(store_pk: int, name: str, store_id: str, api_key: str = "", locale: str = "ar", store_domain: str = ""):
+    with get_session() as session:
+        store = session.get(WuiltStore, store_pk)
+        if not store:
+            return Titled("Store not found", P("Store not found"))
+        new_key = api_key if api_key else store.api_key
+        add_or_update_wuilt_store(session, store_id=store_id, name=name, api_key=new_key, locale=locale, store_domain=store_domain, store_pk=store_pk)
+    return RedirectResponse(f"/wuILT/{store_pk}", status_code=303)
+
+
+@rt("/wuILT/{store_pk:int}/delete")
+def wuilt_delete_store(store_pk: int):
+    with get_session() as session:
+        delete_wuilt_store(session, store_pk)
+    return RedirectResponse("/wuILT", status_code=303)
 
 
 serve(port=5003)

@@ -6,10 +6,13 @@ Docs: https://abdelkareemkobo.github.io/seoottermodels.html.md"""
 
 # %% auto #0
 __all__ = ['get_all_websites', 'delete_website', 'get_tracked_keywords', 'add_tracked_keyword', 'delete_tracked_keyword',
-           'get_url_mapping', 'sync_url_mapping', 'add_or_update_website', 'print_websites']
+           'get_url_mapping', 'sync_url_mapping', 'add_or_update_website', 'print_websites', 'get_all_wuilt_stores',
+           'add_or_update_wuilt_store', 'delete_wuilt_store', 'get_wuilt_products', 'upsert_wuilt_product', 'WuiltPage',
+           'print_wuilt_stores', 'print_wuilt_products', 'get_wuilt_pages', 'upsert_wuilt_page', 'print_wuilt_pages']
 
 # %% ../nbs/01_models.ipynb #8af54b8e
-from sqlmodel import Field, SQLModel, UniqueConstraint, Session, select
+from sqlmodel import Field, SQLModel, UniqueConstraint, Session, select, Column
+from sqlalchemy import JSON
 from datetime import datetime
 from .sqlite_db import get_session
 import re
@@ -232,4 +235,284 @@ class IndexStatus(SQLModel, table=True):
     robots_txt_state: str | None = None  # Robots.txt blocking status
     checked_at: datetime = Field(default_factory=datetime.now)
 
+
+
+# %% ../nbs/01_models.ipynb #6b9c1b30
+class WuiltStore(SQLModel, table=True):
+    "A Wuilt e-commerce store registered for SEO optimization."
+    __table_args__ = {"extend_existing": True}
+    id: int | None = Field(default=None, primary_key=True)
+    store_id: str = Field(unique=True)  # Wuilt store ID ("Store_...")
+    name: str  # Display name
+    api_key: str  # Wuilt GraphQL API key
+    locale: str = "ar"  # Store locale ("ar", "en")
+    store_domain: str = ""  # Storefront domain (for GSC correlation)
+    website_id: int | None = Field(default=None, foreign_key="website.id")  # Optional link to Website
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class WuiltProduct(SQLModel, table=True):
+    "A product synced from a Wuilt store, with its SEO fields."
+    __table_args__ = {"extend_existing": True}
+    id: int | None = Field(default=None, primary_key=True)
+    wuilt_store_id: int = Field(foreign_key="wuiltstore.id")
+    wuilt_product_id: str  # Wuilt's product ID
+    title: str
+    handle: str
+    seo_title: str | None = None
+    seo_description: str | None = None
+    description_html: str | None = None
+    short_description: str | None = None
+    price: float | None = None
+    image_urls: str | None = Field(default=None, sa_column=Column(JSON))  # list[str]
+    images_alt: str | None = Field(default=None, sa_column=Column(JSON))  # list[str]
+    raw_data: str | None = Field(default=None, sa_column=Column(JSON))  # full GraphQL snapshot
+    synced_at: datetime = Field(default_factory=datetime.now)
+    last_optimized_at: datetime | None = None
+    optimized_seo_title: str | None = None
+    optimized_seo_description: str | None = None
+    optimized_description_html: str | None = None
+
+
+# %% ../nbs/01_models.ipynb #wuilt_store_funcs
+def get_all_wuilt_stores(session: Session) -> list[WuiltStore]:
+    "Return all registered Wuilt stores."
+    return session.exec(select(WuiltStore)).all()
+
+
+def add_or_update_wuilt_store(
+    session: Session,
+    store_id: str,
+    name: str,
+    api_key: str,
+    locale: str = "ar",
+    store_domain: str = "",
+    website_id: int | None = None,
+    store_pk: int | None = None,
+) -> WuiltStore:
+    """Add or update a Wuilt store registration."""
+    if store_pk:
+        store = session.get(WuiltStore, store_pk)
+        if store is None:
+            raise ValueError(f"WuiltStore with id {store_pk} not found")
+    else:
+        store = session.exec(select(WuiltStore).where(WuiltStore.store_id == store_id)).first()
+    if store:
+        store.name = name
+        store.api_key = api_key
+        store.locale = locale
+        store.store_domain = store_domain
+        store.website_id = website_id
+    else:
+        store = WuiltStore(
+            store_id=store_id, name=name, api_key=api_key,
+            locale=locale, store_domain=store_domain, website_id=website_id,
+        )
+        session.add(store)
+    session.commit()
+    session.refresh(store)
+    return store
+
+
+def delete_wuilt_store(session: Session, store_pk: int) -> None:
+    "Delete a Wuilt store by ID."
+    store = session.get(WuiltStore, store_pk)
+    if store is None:
+        raise ValueError(f"WuiltStore with id {store_pk} not found")
+    session.delete(store)
+    session.commit()
+
+
+def get_wuilt_products(session: Session, wuilt_store_id: int) -> list[WuiltProduct]:
+    "Get all synced products for a Wuilt store."
+    return session.exec(
+        select(WuiltProduct).where(WuiltProduct.wuilt_store_id == wuilt_store_id)
+    ).all()
+
+
+def upsert_wuilt_product(
+    session: Session,
+    wuilt_store_id: int,
+    wuilt_product_id: str,
+    title: str,
+    handle: str,
+    seo_title: str | None = None,
+    seo_description: str | None = None,
+    description_html: str | None = None,
+    short_description: str | None = None,
+    price: float | None = None,
+    image_urls: list[str] | None = None,
+    images_alt: list[str] | None = None,
+    raw_data: dict | None = None,
+) -> WuiltProduct:
+    "Insert or update a Wuilt product in local DB."
+    product = session.exec(
+        select(WuiltProduct).where(
+            WuiltProduct.wuilt_store_id == wuilt_store_id,
+            WuiltProduct.wuilt_product_id == wuilt_product_id,
+        )
+    ).first()
+    if product:
+        product.title = title
+        product.handle = handle
+        product.seo_title = seo_title
+        product.seo_description = seo_description
+        product.description_html = description_html
+        product.short_description = short_description
+        product.price = price
+        product.image_urls = image_urls
+        product.images_alt = images_alt
+        product.raw_data = raw_data
+        product.synced_at = datetime.now()
+    else:
+        product = WuiltProduct(
+            wuilt_store_id=wuilt_store_id,
+            wuilt_product_id=wuilt_product_id,
+            title=title, handle=handle,
+            seo_title=seo_title, seo_description=seo_description,
+            description_html=description_html, short_description=short_description,
+            price=price, image_urls=image_urls, images_alt=images_alt, raw_data=raw_data,
+        )
+        session.add(product)
+    session.commit()
+    session.refresh(product)
+    return product
+
+
+# %% ../nbs/01_models.ipynb #wuilt_page_model
+class WuiltPage(SQLModel, table=True):
+    "A store page synced from a Wuilt store, with its SEO fields."
+    __table_args__ = {"extend_existing": True}
+    id: int | None = Field(default=None, primary_key=True)
+    wuilt_store_id: int = Field(foreign_key="wuiltstore.id")
+    wuilt_page_id: str  # Wuilt's page ID
+    name: str
+    handle: str
+    page_type: str = "CUSTOM"
+    status: str = "DRAFT"
+    locale: str = "ar"
+    seo_title: str | None = None
+    seo_description: str | None = None
+    raw_data: str | None = Field(default=None, sa_column=Column(JSON))
+    synced_at: datetime = Field(default_factory=datetime.now)
+    last_optimized_at: datetime | None = None
+    optimized_seo_title: str | None = None
+    optimized_seo_description: str | None = None
+
+
+# %% ../nbs/01_models.ipynb #wuilt_print_funcs
+def print_wuilt_stores(stores: list[WuiltStore]) -> None:
+    "Print Wuilt stores as a rich table."
+    if not stores:
+        rprint("[yellow]No Wuilt stores registered.[/yellow]")
+        return
+    table = Table(title="🏪 Wuilt Stores")
+    table.add_column("ID", justify="right", style="dim")
+    table.add_column("Name", style="cyan")
+    table.add_column("Store ID")
+    table.add_column("Locale", justify="center")
+    table.add_column("Domain")
+    for s in stores:
+        table.add_row(str(s.id), s.name, s.store_id, s.locale, s.store_domain or "-")
+    rprint(table)
+
+
+def print_wuilt_products(products: list[WuiltProduct]) -> None:
+    "Print Wuilt products as a rich table."
+    if not products:
+        rprint("[yellow]No products synced yet.[/yellow]")
+        return
+    table = Table(title="📦 Wuilt Products")
+    table.add_column("ID", justify="right", style="dim")
+    table.add_column("Title", style="cyan")
+    table.add_column("Handle")
+    table.add_column("Price", justify="right")
+    table.add_column("SEO Title")
+    table.add_column("Optimized")
+    for p in products:
+        opt = "✅" if p.last_optimized_at else "—"
+        table.add_row(
+            str(p.id), p.title, p.handle,
+            f"{p.price:.0f}" if p.price else "-",
+            (p.seo_title or "")[:40],
+            opt,
+        )
+    rprint(table)
+
+
+# %% ../nbs/01_models.ipynb #wuilt_page_funcs
+def get_wuilt_pages(session: Session, wuilt_store_id: int) -> list[WuiltPage]:
+    "Get all synced pages for a Wuilt store."
+    return session.exec(
+        select(WuiltPage).where(WuiltPage.wuilt_store_id == wuilt_store_id)
+    ).all()
+
+
+def upsert_wuilt_page(
+    session: Session,
+    wuilt_store_id: int,
+    wuilt_page_id: str,
+    name: str,
+    handle: str,
+    page_type: str = "CUSTOM",
+    status: str = "DRAFT",
+    locale: str = "ar",
+    seo_title: str | None = None,
+    seo_description: str | None = None,
+    raw_data: dict | None = None,
+) -> WuiltPage:
+    "Insert or update a Wuilt page in local DB."
+    page = session.exec(
+        select(WuiltPage).where(
+            WuiltPage.wuilt_store_id == wuilt_store_id,
+            WuiltPage.wuilt_page_id == wuilt_page_id,
+        )
+    ).first()
+    if page:
+        page.name = name
+        page.handle = handle
+        page.page_type = page_type
+        page.status = status
+        page.locale = locale
+        page.seo_title = seo_title
+        page.seo_description = seo_description
+        page.raw_data = raw_data
+        page.synced_at = datetime.now()
+    else:
+        page = WuiltPage(
+            wuilt_store_id=wuilt_store_id,
+            wuilt_page_id=wuilt_page_id,
+            name=name, handle=handle,
+            page_type=page_type, status=status, locale=locale,
+            seo_title=seo_title, seo_description=seo_description,
+            raw_data=raw_data,
+        )
+        session.add(page)
+    session.commit()
+    session.refresh(page)
+    return page
+
+
+def print_wuilt_pages(pages: list[WuiltPage]) -> None:
+    "Print Wuilt pages as a rich table."
+    if not pages:
+        rprint("[yellow]No pages synced yet.[/yellow]")
+        return
+    table = Table(title="📄 Wuilt Pages")
+    table.add_column("ID", justify="right", style="dim")
+    table.add_column("Name", style="cyan")
+    table.add_column("Handle")
+    table.add_column("Type")
+    table.add_column("Status")
+    table.add_column("SEO Title")
+    table.add_column("Optimized")
+    for p in pages:
+        opt = "✅" if p.last_optimized_at else "—"
+        table.add_row(
+            str(p.id), p.name, p.handle,
+            p.page_type, p.status,
+            (p.seo_title or "")[:40],
+            opt,
+        )
+    rprint(table)
 

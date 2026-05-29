@@ -11,9 +11,15 @@ not WordPress.
 
 ## Integerations with other systems
 
+### Wuilt
+
+- Connect with GSC Data correctly
+- 
+
+****
+
 - Wordpress
 - Salaa
-- Wuilt
 - shopfiy
 - odoo system
 
