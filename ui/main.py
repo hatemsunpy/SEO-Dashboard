@@ -1,21 +1,21 @@
 from fasthtml.common import *
 from fhdaisy import *
 from fhdaisy.core import daisy_hdrs
-from seo_rat.sqlite_db import get_session
-from seo_rat.models import Website, GSCAnalytics, add_or_update_website, TrackedKeyword, add_tracked_keyword, delete_tracked_keyword, get_tracked_keywords, get_url_mapping, sync_url_mapping
-from seo_rat.gsc.queries import get_top_pages, get_top_queries, get_wins, get_country_breakdown, get_trends
-from seo_rat.gsc.sync import get_missing_dates, store_single_date
-from seo_rat.gsc_client import GSCAuth, get_date_range, get_verified_sites
-from seo_rat.insights.trends import detect_query_trends
-from seo_rat.insights.intent import classify_page_intents
-from seo_rat.content.analysis import find_cannibalized
-from seo_rat.index_tracking import get_index_status, get_not_indexed_by_reason, store_index_status, fetch_sitemap_urls, get_index_history
-from seo_rat.schema_extractor import extract_faq_queries
-from seo_rat.schema_validator import validate_page
-from seo_rat.article import get_articles_by_website, Article
-from seo_rat.report.generator import generate_seo_report
-from seo_rat.article import Article, insert_article
-from seo_rat.dspy_infer import infer_article_seo, get_article_content, predict_schemas
+from seootter.sqlite_db import get_session
+from seootter.models import Website, GSCAnalytics, add_or_update_website, TrackedKeyword, add_tracked_keyword, delete_tracked_keyword, get_tracked_keywords, get_url_mapping, sync_url_mapping
+from seootter.gsc.queries import get_top_pages, get_top_queries, get_wins, get_country_breakdown, get_trends
+from seootter.gsc.sync import get_missing_dates, store_single_date
+from seootter.gsc_client import GSCAuth, get_date_range, get_verified_sites
+from seootter.insights.trends import detect_query_trends
+from seootter.insights.intent import classify_page_intents
+from seootter.content.analysis import find_cannibalized
+from seootter.index_tracking import get_index_status, get_not_indexed_by_reason, store_index_status, fetch_sitemap_urls, get_index_history
+from seootter.schema_extractor import extract_faq_queries
+from seootter.schema_validator import validate_page
+from seootter.article import get_articles_by_website, Article
+from seootter.report.generator import generate_seo_report
+from seootter.article import Article, insert_article
+from seootter.dspy_infer import infer_article_seo, get_article_content, predict_schemas
 import importlib.util
 import json
 import pycountry
@@ -27,7 +27,7 @@ import time
 from datetime import datetime
 import csv, io
 
-CONFIG_DIR = Path.home() / ".config" / "seo_rat"
+CONFIG_DIR = Path.home() / ".config" / "seootter"
 SETTINGS_ENV_PATH = CONFIG_DIR / ".env"
 REPORT_CACHE_DIR = CONFIG_DIR / "report_cache"
 
@@ -295,7 +295,7 @@ def _navbar():
     return Div(cls="navbar bg-base-100 border-b border-base-300 px-4")(
         Div(cls="navbar-start gap-2")(
             Label(for_="drawer-toggle", cls="btn btn-ghost btn-square lg:hidden")("☰"),
-            A("SEO Rat", href="/", cls="btn btn-ghost text-xl font-bold"),
+            A("SEO Otter", href="/", cls="btn btn-ghost text-xl font-bold"),
         ),
         Div(cls="navbar-end gap-1")(
             Details(cls="dropdown dropdown-end")(
@@ -322,7 +322,7 @@ def _body_wrap(content, req):
                     *content,
                 ),
                 Footer(cls="footer footer-center bg-base-100 border-t border-base-300 p-4 text-sm text-base-content/40")(
-                    Span("SEO Rat — Google Search Console Intelligence"),
+                    Span("SEO Otter — Google Search Console Intelligence"),
                 ),
             ),
             Div(cls="drawer-side z-30")(
@@ -438,7 +438,7 @@ def render_nav_cards(id: int):
 
 SITE_TYPE_ICONS = {"quarto": "📘", "astro": "🚀", "hugo": "⚡", "wordpress": "🔵", "other": "🌐"}
 
-FAVICON_CACHE = Path.home() / ".config" / "seo_rat" / "favicons"
+FAVICON_CACHE = Path.home() / ".config" / "seootter" / "favicons"
 
 def _favicon_url(domain: str, size: int = 32) -> str:
     return f"https://www.google.com/s2/favicons?domain={domain}&sz={size}&default=emoji"
@@ -516,7 +516,7 @@ def index():
     with get_session() as session:
         websites = session.exec(select(Website)).all()
         total = len(websites)
-        return Titled("SEO Rat Dashboard",
+        return Titled("SEO Otter Dashboard",
             P("Monitor your sites' Google Search performance", cls="text-base-content/60 mb-6"),
             Div(cls="flex items-center justify-between mb-4")(
                 Span(""),
@@ -2075,7 +2075,7 @@ def _render_schema_tab(id: int, tab: str):
             Div(id="schema-result", cls="mt-4"),
         )
     with get_session() as session:
-        from seo_rat.models import URLMapping, get_url_mapping
+        from seootter.models import URLMapping, get_url_mapping
         articles = get_articles_by_website(session, id)
         mapping = get_url_mapping(session, id)
     seen = set()
@@ -2089,7 +2089,7 @@ def _render_schema_tab(id: int, tab: str):
             seen.add(m.url)
             pages.append({"url": m.url, "label": m.url.rsplit("/", 1)[-1] or m.url, "id": f"map-{m.id}"})
     if not pages:
-        return P("No pages found. Run `seo-rat-report` via CLI first to sync URL mapping, or add articles.",
+        return P("No pages found. Run `seo-otter-report` via CLI first to sync URL mapping, or add articles.",
                  cls="text-sm text-base-content/60")
     return Div(
         Div(cls="flex items-center justify-between mb-2")(
@@ -2194,7 +2194,7 @@ def schema_predict(id: int, page_url: str):
 def schema_check_validate_all(id: int):
     try:
         with get_session() as session:
-            from seo_rat.models import get_url_mapping
+            from seootter.models import get_url_mapping
             articles = get_articles_by_website(session, id)
             mapping = get_url_mapping(session, id)
         seen = set()
@@ -2228,7 +2228,7 @@ def schema_check_validate_all(id: int):
 def schema_predict_all(id: int):
     try:
         with get_session() as session:
-            from seo_rat.models import get_url_mapping
+            from seootter.models import get_url_mapping
             articles = get_articles_by_website(session, id)
             mapping = get_url_mapping(session, id)
         seen = set()
@@ -2345,7 +2345,7 @@ def _render_schema_block(s: dict):
 def load_or_setup_mapper(session, website):
     "Try to load mapper, return ('ok', mapping) or ('missing', None) or ('error', domain, message)."
     domain = website.url.removeprefix("https://").removeprefix("http://").rstrip("/")
-    mapper_path = Path.home() / ".config" / "seo_rat" / "mappers" / domain / "mapper.py"
+    mapper_path = Path.home() / ".config" / "seootter" / "mappers" / domain / "mapper.py"
     if not mapper_path.exists():
         return ("missing", domain, mapper_path)
     try:
@@ -2373,7 +2373,7 @@ def report(id: int, refresh: bool = False, export: str = ""):
             return Titled("Not found", P("Website not found"))
         domain = website.url.removeprefix("https://").removeprefix("http://").rstrip("/")
         if refresh:
-            from seo_rat.models import URLMapping
+            from seootter.models import URLMapping
             for m in session.exec(select(URLMapping).where(URLMapping.website_id == id)):
                 session.delete(m)
             session.commit()
@@ -2559,8 +2559,8 @@ def _report_mapper_setup(id: int, domain_or_result: str, result, website: Websit
     domain = domain_or_result
     local_mode = "direct" if website.site_type in ("quarto", "nbdev") else "slug" if website.site_type == "astro" else "slug"
 
-    local_code = """from seo_rat.content_mapper import map_all_urls_to_files
-from seo_rat.index_tracking import fetch_sitemap_urls
+    local_code = """from seootter.content_mapper import map_all_urls_to_files
+from seootter.index_tracking import fetch_sitemap_urls
 
 
 def get_url_file_mapping() -> dict[str, str]:
@@ -2572,7 +2572,7 @@ def get_url_file_mapping() -> dict[str, str]:
         mode="{1}",
     )""".format(domain, local_mode)
 
-    fetch_code = """from seo_rat.index_tracking import fetch_sitemap_urls
+    fetch_code = """from seootter.index_tracking import fetch_sitemap_urls
 
 
 def get_url_file_mapping() -> dict[str, str]:
@@ -2587,7 +2587,7 @@ def get_url_file_mapping() -> dict[str, str]:
         P(Span("The file will be saved to:", cls="font-semibold"), cls="mb-4"),
         Div(cls="mockup-code mb-6 text-sm")(
             *[Div(cls="px-4")(
-                Span(f"~/.config/seo_rat/mappers/{domain}/mapper.py", cls="text-primary")
+                Span(f"~/.config/seootter/mappers/{domain}/mapper.py", cls="text-primary")
             )],
         ),
         Form(method="POST", action="/save_mapper")(
@@ -2634,7 +2634,7 @@ def edit_mapper(id: int):
         local_mode = "direct" if website.site_type in ("quarto", "nbdev") else "slug"
         name = website.name
         url = website.url
-        mapper_path = Path.home() / ".config" / "seo_rat" / "mappers" / domain / "mapper.py"
+        mapper_path = Path.home() / ".config" / "seootter" / "mappers" / domain / "mapper.py"
         existing_code = mapper_path.read_text() if mapper_path.exists() else ""
     return Title(f"Edit Mapper - {name}"), Main(cls="container")(
         A("← Back to Report", href=report.to(id=id), cls="link link-primary mb-4 block"),
@@ -2658,14 +2658,14 @@ def edit_mapper(id: int):
 
 @rt
 def save_mapper(id: int, domain: str, code: str, mode: str = "local"):
-    mapper_dir = Path.home() / ".config" / "seo_rat" / "mappers" / domain
+    mapper_dir = Path.home() / ".config" / "seootter" / "mappers" / domain
     mapper_dir.mkdir(parents=True, exist_ok=True)
     mapper_path = mapper_dir / "mapper.py"
     mapper_path.write_text(code)
     _report_cache.pop(id, None)
     REPORT_CACHE_DIR.joinpath(f"{id}.json").unlink(missing_ok=True)
     with get_session() as session:
-        from seo_rat.models import URLMapping
+        from seootter.models import URLMapping
         for m in session.exec(select(URLMapping).where(URLMapping.website_id == id)):
             session.delete(m)
         session.commit()
@@ -2678,7 +2678,7 @@ def delete_mapper(id: int):
         website = session.get(Website, id)
         if website:
             domain = website.url.removeprefix("https://").removeprefix("http://").rstrip("/")
-            mapper_path = Path.home() / ".config" / "seo_rat" / "mappers" / domain / "mapper.py"
+            mapper_path = Path.home() / ".config" / "seootter" / "mappers" / domain / "mapper.py"
             if mapper_path.exists():
                 mapper_path.unlink()
     _report_cache.pop(id, None)
@@ -2811,7 +2811,7 @@ def article_save(article_id: int, focus_keyword: str = "", secondary_keywords: s
     )
 
 
-_SETTINGS_KEYS = ["LLM_MODEL", "LLM_API_KEY", "LLM_API_BASE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "SEO_RAT_DB_URL"]
+_SETTINGS_KEYS = ["LLM_MODEL", "LLM_API_KEY", "LLM_API_BASE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "SEEOOTTER_DB_URL"]
 
 
 def _read_settings_env() -> dict[str, str]:
@@ -2927,8 +2927,8 @@ def settings(msg: str = ""):
             ),
             Fieldset(
                 FieldsetLegend("Database"),
-                Label("SEO_RAT_DB_URL", cls="text-sm font-medium"),
-                Input(name="SEO_RAT_DB_URL", value=vals.get("SEO_RAT_DB_URL", ""),
+                Label("SEEOOTTER_DB_URL", cls="text-sm font-medium"),
+                Input(name="SEEOOTTER_DB_URL", value=vals.get("SEEOOTTER_DB_URL", ""),
                       type="text", cls="input input-bordered w-full"),
                 cls="border border-base-300 rounded-lg p-4 mb-4",
             ),
@@ -2942,21 +2942,21 @@ def settings(msg: str = ""):
 @rt
 def settings_save(LLM_MODEL: str = "", LLM_API_KEY: str = "", LLM_API_BASE: str = "",
                   GOOGLE_CLIENT_ID: str = "", GOOGLE_CLIENT_SECRET: str = "",
-                  SEO_RAT_DB_URL: str = ""):
+                  SEEOOTTER_DB_URL: str = ""):
     # keep existing env values as fallback when form fields are empty
     LLM_MODEL = LLM_MODEL or os.getenv("LLM_MODEL", "groq/llama-3.3-70b-versatile")
     LLM_API_KEY = LLM_API_KEY or os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY", "")
     LLM_API_BASE = LLM_API_BASE or os.getenv("LLM_API_BASE", "")
     GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID or os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET = GOOGLE_CLIENT_SECRET or os.getenv("GOOGLE_CLIENT_SECRET", "")
-    SEO_RAT_DB_URL = SEO_RAT_DB_URL or os.getenv("SEO_RAT_DB_URL", "")
+    SEEOOTTER_DB_URL = SEEOOTTER_DB_URL or os.getenv("SEEOOTTER_DB_URL", "")
     data = {
         "LLM_MODEL": LLM_MODEL,
         "LLM_API_KEY": LLM_API_KEY,
         "LLM_API_BASE": LLM_API_BASE,
         "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,
         "GOOGLE_CLIENT_SECRET": GOOGLE_CLIENT_SECRET,
-        "SEO_RAT_DB_URL": SEO_RAT_DB_URL,
+        "SEEOOTTER_DB_URL": SEEOOTTER_DB_URL,
     }
     _write_settings_env(data)
     if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
@@ -2966,7 +2966,7 @@ def settings_save(LLM_MODEL: str = "", LLM_API_KEY: str = "", LLM_API_BASE: str 
 
 
 def _write_gsc_secrets(client_id: str, client_secret: str):
-    """Write GOOGLE_CLIENT_ID/SECRET to ~/.config/seo_rat/client_secrets.json for GSCAuth."""
+    """Write GOOGLE_CLIENT_ID/SECRET to ~/.config/seootter/client_secrets.json for GSCAuth."""
     import json
     secrets = {
         "installed": {

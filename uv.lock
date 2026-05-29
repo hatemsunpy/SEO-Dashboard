@@ -3050,7 +3050,7 @@ wheels = [
 ]
 
 [[package]]
-name = "seo-rat"
+name = "seootter"
 source = { editable = "." }
 dependencies = [
     { name = "altair" },

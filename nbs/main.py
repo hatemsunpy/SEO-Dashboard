@@ -2,9 +2,9 @@ from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-from seo_rat.fast_gsc import app as search_api_app
-from seo_rat.store_gsc import store_router  # Import the storage router
-from seo_rat.indextime import router as index_router
+from seootter.fast_gsc import app as search_api_app
+from seootter.store_gsc import store_router  # Import the storage router
+from seootter.indextime import router as index_router
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 

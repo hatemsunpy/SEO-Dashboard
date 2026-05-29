@@ -3,9 +3,9 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "seo_rat"
+name = "seootter"
 dynamic = ["version"]
-description = "seo rat is an SEO to give you some help to optimize your content based on markdown for sites like astor, quarto"
+description = "seo otter is an SEO to give you some help to optimize your content based on markdown for sites like astor, quarto"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
@@ -42,51 +42,51 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/abdelkareemkobo/seo_rat"
-Documentation = "https://abdelkareemkobo.github.io/seo_rat"
+Repository = "https://github.com/abdelkareemkobo/seootter"
+Documentation = "https://abdelkareemkobo.github.io/seootter"
 
 [project.scripts]
 
 nbdev_preview = "nbdev.quarto:nbdev_preview"
-seo-rat-sync = "seo_rat.cli:seo_rat_sync"
-seo-rat-report = "seo_rat.cli:seo_rat_report"
-seo-rat-audit = "seo_rat.cli:seo_rat_audit"
-seo-rat-rank = "seo_rat.cli:seo_rat_rank"
-seo-rat-trend = "seo_rat.cli:seo_rat_trend"
-seo-rat-top-pages = "seo_rat.cli:seo_rat_top_pages"
-seo-rat-wins = "seo_rat.cli:seo_rat_wins"
-seo-rat-canob = "seo_rat.cli:seo_rat_canob"
-seo-rat-index-check = "seo_rat.cli:seo_rat_index_check"
-seo-rat-index-report = "seo_rat.cli:seo_rat_index_report"
-seo-rat-crawl-errors = "seo_rat.cli:seo_rat_crawl_errors"
-seo-rat-add-website = "seo_rat.cli:seo_rat_add_website"
-seo-rat-list-websites = "seo_rat.cli:seo_rat_list_websites"
-seo-rat-delete-website = "seo_rat.cli:seo_rat_delete_website"
-seo-rat-compare = "seo_rat.cli:seo_rat_compare"
-seo-rat-country-breakdown = "seo_rat.cli:seo_rat_country_breakdown"
-seo-rat-schema-check = "seo_rat.cli:seo_rat_schema_check"
-seo-rat-faq = "seo_rat.cli:seo_rat_faq"
-seo-rat-add-tracked-keyword = "seo_rat.cli:seo_rat_add_tracked_keyword"
-seo-rat-list-tracked-keywords = "seo_rat.cli:seo_rat_list_tracked_keywords"
-seo-rat-delete-tracked-keyword = "seo_rat.cli:seo_rat_delete_tracked_keyword"
+seo-otter-sync = "seootter.cli:seo_otter_sync"
+seo-otter-report = "seootter.cli:seo_otter_report"
+seo-otter-audit = "seootter.cli:seo_otter_audit"
+seo-otter-rank = "seootter.cli:seo_otter_rank"
+seo-otter-trend = "seootter.cli:seo_otter_trend"
+seo-otter-top-pages = "seootter.cli:seo_otter_top_pages"
+seo-otter-wins = "seootter.cli:seo_otter_wins"
+seo-otter-canob = "seootter.cli:seo_otter_canob"
+seo-otter-index-check = "seootter.cli:seo_otter_index_check"
+seo-otter-index-report = "seootter.cli:seo_otter_index_report"
+seo-otter-crawl-errors = "seootter.cli:seo_otter_crawl_errors"
+seo-otter-add-website = "seootter.cli:seo_otter_add_website"
+seo-otter-list-websites = "seootter.cli:seo_otter_list_websites"
+seo-otter-delete-website = "seootter.cli:seo_otter_delete_website"
+seo-otter-compare = "seootter.cli:seo_otter_compare"
+seo-otter-country-breakdown = "seootter.cli:seo_otter_country_breakdown"
+seo-otter-schema-check = "seootter.cli:seo_otter_schema_check"
+seo-otter-faq = "seootter.cli:seo_otter_faq"
+seo-otter-add-tracked-keyword = "seootter.cli:seo_otter_add_tracked_keyword"
+seo-otter-list-tracked-keywords = "seootter.cli:seo_otter_list_tracked_keywords"
+seo-otter-delete-tracked-keyword = "seootter.cli:seo_otter_delete_tracked_keyword"
 
 [project.entry-points.nbdev]
-seo_rat = "seo_rat._modidx:d"
+seootter = "seootter._modidx:d"
 
 [tool.setuptools.dynamic]
-version = { attr = "seo_rat.__version__" }
+version = { attr = "seootter.__version__" }
 
 [tool.setuptools.packages.find]
-include = ["seo_rat"]
+include = ["seootter"]
 
 [tool.nbdev]
-repo = "seo_rat"
+repo = "seootter"
 branch = "main"
 user = "abdelkareemkobo"
 doc_host = "https://abdelkareemkobo.github.io"
-doc_baseurl = "/seo_rat/"
-git_url = "https://github.com/abdelkareemkobo/seo_rat/"
-lib_path = "seo_rat"
+doc_baseurl = "/seootter/"
+git_url = "https://github.com/abdelkareemkobo/seootter/"
+lib_path = "seootter"
 nbs_path = "nbs"
 custom_sidebar = false
 dev_requirements = ["pysymbol_llm", "llms-txt"]

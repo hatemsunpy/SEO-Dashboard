@@ -141,22 +141,22 @@ not WordPress.
 
 ### CLI (16 commands)
 
-- [x] `seo-rat-sync`
-- [x] `seo-rat-report`
-- [x] `seo-rat-audit`
-- [x] `seo-rat-rank`
-- [x] `seo-rat-trend`
-- [x] `seo-rat-top-pages`
-- [x] `seo-rat-wins`
-- [x] `seo-rat-canob`
-- [x] `seo-rat-index-check`
-- [x] `seo-rat-index-report`
-- [x] `seo-rat-index-refresh`
-- [x] `seo-rat-crawl-errors`
-- [x] `seo-rat-compare`
-- [x] `seo-rat-country-breakdown`
-- [x] `seo-rat-schema-check`
-- [x] `seo-rat-faq`
+- [x] `seo-otter-sync`
+- [x] `seo-otter-report`
+- [x] `seo-otter-audit`
+- [x] `seo-otter-rank`
+- [x] `seo-otter-trend`
+- [x] `seo-otter-top-pages`
+- [x] `seo-otter-wins`
+- [x] `seo-otter-canob`
+- [x] `seo-otter-index-check`
+- [x] `seo-otter-index-report`
+- [x] `seo-otter-index-refresh`
+- [x] `seo-otter-crawl-errors`
+- [x] `seo-otter-compare`
+- [x] `seo-otter-country-breakdown`
+- [x] `seo-otter-schema-check`
+- [x] `seo-otter-faq`
 
 ### Content Mapping
 
