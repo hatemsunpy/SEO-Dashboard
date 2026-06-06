@@ -14,7 +14,7 @@ not WordPress.
 ### Wuilt
 
 - Connect with GSC Data correctly
-- 
+- Does wuilt support schema.org ?
 
 ****
 

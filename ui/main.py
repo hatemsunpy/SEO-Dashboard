@@ -145,11 +145,89 @@ CUSTOM_STYLE = Style("""
 .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
 .htmx-request .htmx-indicator { opacity: 1; }
 .htmx-request.htmx-indicator { opacity: 1; }
-.drawer-content .container { animation: fadeIn 0.2s ease-in; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.drawer-content .container { animation: fadeIn 0.25s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .theme-btn.active::before { content: "✓ "; }
-main.container h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
-main.container { padding-top: 0; }
+
+/* ── Page header ─────────────────────────────────────── */
+.page-header { margin-bottom: 1.75rem; }
+.page-header h1 { font-size: 1.625rem; font-weight: 700; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+.page-header .subtitle { color: oklch(var(--bc) / 0.6); font-size: 0.875rem; margin-top: 0.25rem; }
+.page-header .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.page-header-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem; }
+.page-header-row .grow { flex: 1; min-width: 0; }
+
+/* ── Stat card ───────────────────────────────────────── */
+.stat-card {
+  background: oklch(var(--b1));
+  border: 1px solid oklch(var(--b3));
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  transition: all 0.15s ease;
+}
+.stat-card:hover { border-color: oklch(var(--p) / 0.4); }
+.stat-card .label { font-size: 0.75rem; color: oklch(var(--bc) / 0.6); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; line-height: 1; }
+.stat-card .delta { font-size: 0.75rem; margin-top: 0.375rem; font-weight: 500; }
+.stat-card .delta.pos { color: oklch(var(--su)); }
+.stat-card .delta.neg { color: oklch(var(--er)); }
+
+/* ── Empty state ─────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: oklch(var(--b1));
+  border: 1px dashed oklch(var(--b3));
+  border-radius: 0.75rem;
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.6; }
+.empty-state h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+.empty-state p { color: oklch(var(--bc) / 0.6); font-size: 0.875rem; max-width: 32rem; margin: 0 auto 1.25rem; }
+
+/* ── Status badge ────────────────────────────────────── */
+.badge-soft-success { background: oklch(var(--su) / 0.15); color: oklch(var(--su)); border: 1px solid oklch(var(--su) / 0.2); }
+.badge-soft-warning { background: oklch(var(--wa) / 0.15); color: oklch(var(--wa)); border: 1px solid oklch(var(--wa) / 0.2); }
+.badge-soft-info { background: oklch(var(--in) / 0.15); color: oklch(var(--in)); border: 1px solid oklch(var(--in) / 0.2); }
+.badge-soft-error { background: oklch(var(--er) / 0.15); color: oklch(var(--er)); border: 1px solid oklch(var(--er) / 0.2); }
+
+/* ── Card / section ──────────────────────────────────── */
+.section { background: oklch(var(--b1)); border: 1px solid oklch(var(--b3)); border-radius: 0.75rem; padding: 1.25rem 1.5rem; }
+.section-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 600; margin: 0 0 0.875rem 0; }
+.section-subtitle { color: oklch(var(--bc) / 0.6); font-size: 0.8125rem; margin-top: -0.5rem; margin-bottom: 0.875rem; }
+
+/* ── Hint box ────────────────────────────────────────── */
+.hint { display: flex; gap: 0.625rem; align-items: flex-start; background: oklch(var(--in) / 0.08); border: 1px solid oklch(var(--in) / 0.2); border-radius: 0.5rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: oklch(var(--bc) / 0.85); }
+.hint .hint-icon { font-size: 1rem; line-height: 1.4; }
+.hint strong { color: oklch(var(--bc)); font-weight: 600; }
+
+/* ── Loading skeleton ────────────────────────────────── */
+.skeleton { background: linear-gradient(90deg, oklch(var(--b2)) 0%, oklch(var(--b3)) 50%, oklch(var(--b2)) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 0.375rem; }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+/* ── Scrollbars ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(var(--b3)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: oklch(var(--bc) / 0.2); background-clip: padding-box; border: 2px solid transparent; }
+
+/* ── Focus visible ───────────────────────────────────── */
+*:focus-visible { outline: 2px solid oklch(var(--p)); outline-offset: 2px; border-radius: 0.25rem; }
+
+/* ── Smooth transitions on links & buttons ───────────── */
+a, button, .btn { transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+
+/* ── Code & monospace ────────────────────────────────── */
+code, kbd { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 0.875em; }
+
+/* ── Page transitions ────────────────────────────────── */
+.page-fade { animation: pageFade 0.3s ease-out; }
+@keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Data table polish ───────────────────────────────── */
+.table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: oklch(var(--bc) / 0.6); font-weight: 600; }
+.table tbody td { vertical-align: middle; }
+.table-hover tbody tr { transition: background-color 0.1s ease; }
+.table-zebra tbody tr:nth-child(even) { background-color: oklch(var(--b2) / 0.3); }
 """)
 
 THEME_STYLE = Style("""
@@ -282,34 +360,152 @@ color-scheme: light;
 page_hdrs = daisy_hdrs + (THEME_SCRIPT, CUSTOM_STYLE, THEME_STYLE)
 
 
+# ── UI helper components ──────────────────────────────────────────────
+def page_header(title: str, subtitle: str = "", back: str = "", actions: list | None = None):
+    """Consistent page header with optional breadcrumb back link and action buttons."""
+    children = []
+    if back:
+        children.append(A(f"← {back}", href=back, cls="text-sm text-base-content/60 hover:text-primary mb-2 inline-flex items-center gap-1"))
+    children.append(Div(cls="page-header-row")(
+        Div(cls="grow")(
+            H1(title, cls="text-2xl font-bold"),
+            P(subtitle, cls="subtitle") if subtitle else "",
+        ),
+        Div(cls="page-header actions")(*actions) if actions else "",
+    ))
+    return Div(cls="page-header page-fade")(*children)
+
+
+def stat_card(label: str, value, delta: str = "", delta_positive: bool = True, icon: str = "", href: str = ""):
+    """Polished stat card with label, value, optional delta and icon."""
+    inner = Div(
+        Div(cls="flex items-center justify-between")(
+            Span(label, cls="label"),
+            Span(icon, cls="text-lg opacity-60") if icon else "",
+        ),
+        Div(str(value), cls="value"),
+        Span(delta, cls=f"delta {'pos' if delta_positive else 'neg'}") if delta else "",
+    )
+    if href:
+        return A(inner, href=href, cls="stat-card no-underline")
+    return Div(cls="stat-card")(inner)
+
+
+def empty_state(icon: str, title: str, description: str, cta_text: str = "", cta_href: str = ""):
+    """Friendly empty state with icon, title, description, and optional CTA button."""
+    return Div(cls="empty-state")(
+        Div(icon, cls="icon"),
+        H3(title),
+        P(description),
+        A(cta_text, href=cta_href, cls="btn btn-primary btn-sm") if cta_text and cta_href else "",
+    )
+
+
+def hint_box(text: str, icon: str = "💡"):
+    """A subtle info/hint callout for helpful context."""
+    if isinstance(text, str):
+        return Div(cls="hint")(
+            Span(icon, cls="hint-icon"),
+            Span(text),
+        )
+    return Div(cls="hint")(
+        Span(icon, cls="hint-icon"),
+        Div(*text) if isinstance(text, list) else text,
+    )
+
+
+def section(title: str, subtitle: str = "", *children):
+    """A content section with title and optional subtitle."""
+    return Div(cls="section mb-6")(
+        H2(title, cls="section-title") if title else "",
+        P(subtitle, cls="section-subtitle") if subtitle else "",
+        *children,
+    )
+
+
+def status_badge(status: str, size: str = "sm"):
+    """Colored status badge for published/draft/active/etc."""
+    s = status.upper()
+    color_map = {
+        "PUBLISHED": "badge-soft-success", "ACTIVE": "badge-soft-success", "PUBLISH": "badge-soft-success",
+        "DRAFT": "badge-soft-warning", "PENDING": "badge-soft-warning", "ARCHIVED": "badge-soft-info",
+        "ERROR": "badge-soft-error", "FAILED": "badge-soft-error",
+    }
+    color = color_map.get(s, "badge-soft")
+    return Span(status, cls=f"badge {color} badge-{size}")
+
+
+def loading_indicator(text: str = "Loading..."):
+    """Standard HTMX loading indicator."""
+    return Span(cls="htmx-indicator inline-flex items-center gap-2 text-sm text-base-content/60")(
+        Span(cls="loading loading-spinner loading-xs"),
+        Span(text),
+    )
+
+
+def toast(message: str, kind: str = "info"):
+    """A small dismissable toast notification (rendered inline)."""
+    icon_map = {"success": "✅", "error": "❌", "warning": "⚠️", "info": "ℹ️"}
+    color_map = {"success": "alert-success", "error": "alert-error", "warning": "alert-warning", "info": "alert-info"}
+    return Div(cls=f"alert {color_map.get(kind, 'alert-info')} mb-4")(
+        Span(icon_map.get(kind, "ℹ️")),
+        Span(message),
+    )
+
+
 def _sidebar():
-    return Ul(cls="menu p-4 w-64 min-h-full bg-base-200 text-base-content gap-1")(
-        Li(cls="menu-title text-xs tracking-wider opacity-50 px-4 py-2")("Navigation"),
-        Li(A(href="/", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
-            Span("📊", cls="text-lg"), Span("Dashboard"),
-        )),
-        Li(A(href="/settings", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
-            Span("⚙️", cls="text-lg"), Span("Settings"),
-        )),
-        Li(A(href="/wuILT", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
-            Span("🏪", cls="text-lg"), Span("Wuilt Stores"),
-        )),
+    with get_session() as session:
+        site_count = len(session.exec(select(Website)).all())
+        store_count = len(session.exec(select(WuiltStore)).all())
+    return Aside(cls="w-64 min-h-full bg-base-200 border-r border-base-300 flex flex-col")(
+        Div(cls="p-5 border-b border-base-300")(
+            A(href="/", cls="flex items-center gap-2 no-underline")(
+                Span("🦦", cls="text-2xl"),
+                Div()(
+                    Div("SEO Otter", cls="font-bold text-base leading-tight"),
+                    Div("SEO made simple", cls="text-xs text-base-content/50"),
+                ),
+            ),
+        ),
+        Ul(cls="menu p-3 gap-1 grow")(
+            Li(cls="menu-title text-xs tracking-wider opacity-50 px-4 py-2")("Workspace"),
+            Li(A(href="/", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
+                Span("📊", cls="text-lg"), Span("Dashboard"),
+                Span(str(site_count), cls="badge badge-soft badge-sm ml-auto") if site_count else "",
+            )),
+            Li(cls="menu-title text-xs tracking-wider opacity-50 px-4 py-2 mt-3")("E-commerce"),
+            Li(A(href="/wuILT", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
+                Span("🏪", cls="text-lg"), Span("Wuilt Stores"),
+                Span(str(store_count), cls="badge badge-soft badge-sm ml-auto") if store_count else "",
+            )),
+            Li(cls="menu-title text-xs tracking-wider opacity-50 px-4 py-2 mt-3")("System"),
+            Li(A(href="/settings", cls="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-base-300")(
+                Span("⚙️", cls="text-lg"), Span("Settings"),
+            )),
+        ),
+        Div(cls="p-4 border-t border-base-300 text-xs text-base-content/40")(
+            P("SEO Otter v0.0.1", cls="mb-1"),
+            P("Made with ♥ for SEO", cls="opacity-70"),
+        ),
     )
 
 
 def _navbar():
-    return Div(cls="navbar bg-base-100 border-b border-base-300 px-4")(
+    return Div(cls="navbar bg-base-100 border-b border-base-300 px-4 h-14 min-h-14")(
         Div(cls="navbar-start gap-2")(
-            Label(for_="drawer-toggle", cls="btn btn-ghost btn-square lg:hidden")("☰"),
-            A("SEO Otter", href="/", cls="btn btn-ghost text-xl font-bold"),
+            Label(for_="drawer-toggle", cls="btn btn-ghost btn-square btn-sm lg:hidden")("☰"),
         ),
         Div(cls="navbar-end gap-1")(
             Details(cls="dropdown dropdown-end")(
-                Summary(cls="btn btn-ghost btn-sm")("🎨"),
-                Ul(cls="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow-lg min-w-32")(
+                Summary(cls="btn btn-ghost btn-sm gap-2")(
+                    Span("🎨", cls="text-base"),
+                    Span("Theme", cls="text-sm hidden sm:inline"),
+                ),
+                Ul(cls="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow-lg min-w-36 border border-base-300")(
+                    Li(P("Color theme", cls="text-xs text-base-content/50 px-3 py-1")),
                     *[Li(Button(
-                        {"dim": "Dim", "light": "Light", "dark": "Dark", "coffee": "Coffee", "night": "Night", "winter": "Winter"}.get(t, t.title()),
-                        cls="theme-btn", data_theme=t,
+                        {"dim": "🌑 Dim", "light": "☀️ Light", "dark": "🌙 Dark", "coffee": "☕ Coffee", "night": "🌃 Night", "winter": "❄️ Winter"}.get(t, t.title()),
+                        cls="theme-btn justify-start", data_theme=t,
                         onclick=f"setTheme('{t}')",
                     )) for t in THEMES],
                 ),
@@ -401,44 +597,33 @@ def _run_index_check(id: int, site_url: str, sitemap_url: str):
     _index_check_progress[id] = {"status": "done", "total": total, "successful": p["successful"], "failed": p["failed"]}
 
 
-NAV_CARD_ICONS = {
-    "Top Pages": "📄",
-    "Keywords": "🔑",
-    "Wins": "🏆",
-    "Index Status": "🔍",
-    "Countries": "🌍",
-    "Cannibalization": "🔗",
-    "FAQ": "❓",
-    "SERPWatcher": "📊",
-    "Schema Check": "✅",
-    "Articles": "📝",
-    "SEO Report": "📋",
-}
-
 def render_nav_cards(id: int):
     items = [
-        (top_pages, "Top Pages", "pages ranked by metrics"),
-        (keywords, "Keywords", "search queries & trends"),
-        (wins, "Wins", "opportunities to capture"),
-        (index_status, "Index Status", "coverage & errors"),
-        (countries, "Countries", "geo breakdown"),
-        (canb, "Cannibalization", "duplicate content"),
-        (faq, "FAQ", "schema questions"),
-        (serpwatcher, "SERPWatcher", "tracked keywords"),
-        (schema_check, "Schema Check", "structured data"),
-        (articles, "Articles", "SEO inference & metadata"),
-        (report, "SEO Report", "full site audit"),
+        (report, "SEO Report", "Full site audit", "📋", True),
+        (keywords, "Keywords", "Search queries & trends", "🔑", True),
+        (top_pages, "Top Pages", "Pages ranked by metrics", "📄", True),
+        (wins, "Wins", "Opportunities to capture", "🏆", True),
+        (index_status, "Index Status", "Coverage & errors", "🔍", True),
+        (canb, "Cannibalization", "Duplicate content", "🔗", False),
+        (schema_check, "Schema Check", "Structured data", "✅", False),
+        (faq, "FAQ", "Schema questions", "❓", False),
+        (serpwatcher, "SERPWatcher", "Tracked keywords", "📊", False),
+        (countries, "Countries", "Geo breakdown", "🌍", False),
+        (articles, "Articles", "SEO inference & metadata", "📝", False),
     ]
-    return Div(cls="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3")(
+    return Div(cls="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3")(
         *[A(
-            Div(cls="card-body items-center text-center px-3 py-4")(
-                Span(NAV_CARD_ICONS.get(label, "📊"), cls="text-2xl mb-1"),
-                Span(label, cls="font-medium text-sm"),
-                Span(desc, cls="text-xs text-base-content/50 leading-tight"),
+            Div(cls="card-body px-4 py-4")(
+                Div(cls="flex items-start justify-between mb-2")(
+                    Span(icon, cls="text-2xl"),
+                    Span("→", cls="text-base-content/30 group-hover:text-primary transition-colors"),
+                ),
+                Div(label, cls="font-semibold text-sm"),
+                P(desc, cls="text-xs text-base-content/50 mt-0.5 line-clamp-2"),
             ),
             href=route.to(id=id),
-            cls="card card-border bg-base-100 hover:bg-base-200 hover:border-primary hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline",
-        ) for route, label, desc in items]
+            cls="card card-border bg-base-100 hover:bg-base-200 hover:border-primary hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline group",
+        ) for route, label, desc, icon, _primary in items]
     )
 
 
@@ -452,28 +637,30 @@ def _favicon_url(domain: str, size: int = 32) -> str:
 def render_site_card(w):
     domain = w.url.replace("https://", "").replace("http://", "").rstrip("/")
     fallback_emoji = SITE_TYPE_ICONS.get(w.site_type or "other", "🌐")
+    site_type = (w.site_type or "other").title()
     return A(
         Div(cls="card-body p-5")(
-            Div(cls="flex items-start justify-between")(
-                Div(cls="flex items-center gap-3")(
-                    Div(cls="w-8 h-8 flex items-center justify-center")(
-                        Img(src=_favicon_url(domain), alt="", cls="w-8 h-8 rounded",
+            Div(cls="flex items-start justify-between mb-2")(
+                Div(cls="flex items-center gap-3 min-w-0")(
+                    Div(cls="w-10 h-10 flex items-center justify-center bg-base-200 rounded-lg shrink-0")(
+                        Img(src=_favicon_url(domain), alt="", cls="w-6 h-6 rounded",
                             loading="lazy", style="display:block",
                             onerror=f"this.style.display='none';this.nextElementSibling.style.display='block'"),
-                        Span(fallback_emoji, cls="text-2xl", style="display:none"),
+                        Span(fallback_emoji, cls="text-xl", style="display:none"),
                     ),
-                    Div(
-                        H3(w.name or domain, cls="card-title text-base"),
-                        P(domain, cls="text-sm text-base-content/50 truncate max-w-48"),
+                    Div(cls="min-w-0")(
+                        H3(w.name or domain, cls="card-title text-base truncate"),
+                        P(domain, cls="text-sm text-base-content/50 truncate"),
                     ),
                 ),
-                Span(cls="badge badge-soft badge-sm")(w.site_type or "other"),
+                Span(cls=f"badge badge-soft badge-sm shrink-0")(site_type),
             ),
-            Div(cls="flex items-center gap-2 mt-2 text-xs text-base-content/40")(
-                Span(f"ID: {w.id}"),
+            P(w.desc, cls="text-sm text-base-content/60 line-clamp-2 mb-3") if w.desc else "",
+            Div(cls="flex items-center gap-3 text-xs text-base-content/40 pt-2 border-t border-base-200")(
+                Span(cls="flex items-center gap-1")(Span("🌐"), Span(w.lang.upper())),
                 Span("·"),
-                Span(w.lang or "en"),
-            ) if w.desc else "",
+                Span(cls="flex items-center gap-1")(Span("🆔"), Span(f"ID {w.id}")),
+            ),
         ),
         href=site.to(id=w.id),
         cls="card card-border bg-base-100 hover:bg-base-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 no-underline group",
@@ -481,35 +668,52 @@ def render_site_card(w):
 
 
 def render_add_form():
-    return Card(cls="card-border")(
+    return Card(cls="card-border bg-base-100")(
         CardBody(
-            Div(cls="flex items-center gap-3 mb-6")(
+            Div(cls="flex items-start gap-3 mb-2")(
                 Span("➕", cls="text-2xl"),
-                H2("Add Website", cls="card-title text-xl"),
+                Div()(
+                    H2("Add a new website", cls="card-title text-xl"),
+                    P("Add a website to start tracking its Google Search Console data and SEO performance.", cls="text-sm text-base-content/60 mt-1"),
+                ),
             ),
             Form(
-                Div(cls="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4")(
-                    Fieldset(FieldsetLegend("URL"),
-                        Input(name="url", placeholder="https://example.com", required=True, cls="input w-full")),
-                    Fieldset(FieldsetLegend("Name"),
-                        Input(name="name", placeholder="My Site", required=True, cls="input w-full")),
-                    Fieldset(FieldsetLegend("Site Type"),
+                Div(cls="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4")(
+                    Fieldset(FieldsetLegend(cls="text-xs font-medium")("URL *"),
+                        Input(name="url", placeholder="https://example.com", required=True, cls="input w-full"),
+                        P("The full URL of your site", cls="text-xs text-base-content/50 mt-1")),
+                    Fieldset(FieldsetLegend(cls="text-xs font-medium")("Name *"),
+                        Input(name="name", placeholder="My Site", required=True, cls="input w-full"),
+                        P("A friendly name for this site", cls="text-xs text-base-content/50 mt-1")),
+                    Fieldset(FieldsetLegend(cls="text-xs font-medium")("Site Type *"),
                         Select(
                             Option("Quarto", value="quarto", selected=True),
                             Option("Astro", value="astro"),
                             Option("Hugo", value="hugo"),
                             Option("WordPress", value="wordpress"),
-                            name="site_type", required=True, cls="select w-full")),
-                    Fieldset(FieldsetLegend("Description"),
+                            name="site_type", required=True, cls="select w-full"),
+                        P("Determines how content is mapped", cls="text-xs text-base-content/50 mt-1")),
+                    Fieldset(FieldsetLegend(cls="text-xs font-medium")("Description"),
                         Input(name="desc", placeholder="Optional description", cls="input w-full")),
-                    Fieldset(FieldsetLegend("Language"),
-                        Input(name="lang", value="en", cls="input w-full")),
-                    Fieldset(FieldsetLegend("Content Directory"),
-                        Input(name="content_dir", placeholder="/path/to/content", cls="input w-full")),
+                    Fieldset(FieldsetLegend(cls="text-xs font-medium")("Language"),
+                        Select(
+                            Option("English (en)", value="en", selected=True),
+                            Option("Arabic (ar)", value="ar"),
+                            Option("French (fr)", value="fr"),
+                            Option("Spanish (es)", value="es"),
+                            Option("German (de)", value="de"),
+                            name="lang", cls="select w-full"),
+                        P("Two-letter language code", cls="text-xs text-base-content/50 mt-1")),
+                    Fieldset(FieldsetLegend(cls="text-xs font-medium")("Content Directory"),
+                        Input(name="content_dir", placeholder="/path/to/content", cls="input w-full"),
+                        P("Local path to your content files (for SEO reports)", cls="text-xs text-base-content/50 mt-1")),
                 ),
-                Div(cls="mt-6 flex justify-end gap-2")(
-                    Btn("Clear", cls="-ghost", type="reset"),
-                    Btn("Add Website", cls="-primary", type="submit"),
+                Div(cls="mt-6 flex items-center justify-between gap-2 pt-4 border-t border-base-200")(
+                    P("After adding, you'll be able to sync GSC data from the site dashboard.", cls="text-xs text-base-content/50"),
+                    Div(cls="flex gap-2")(
+                        Btn("Clear", cls="-ghost", type="reset"),
+                        Btn("Add Website →", cls="-primary", type="submit"),
+                    ),
                 ),
                 action=add_website.to(), method="post",
             ),
@@ -521,18 +725,55 @@ def render_add_form():
 def index():
     with get_session() as session:
         websites = session.exec(select(Website)).all()
+        stores = session.exec(select(WuiltStore)).all()
         total = len(websites)
+        total_stores = len(stores)
+
+        last_sync_date = None
+        if websites:
+            from sqlmodel import func as _func
+            for w in websites:
+                domain = w.url.replace("https://", "").replace("http://", "").rstrip("/")
+                site_url = f"sc-domain:{domain}"
+                d = session.exec(select(_func.max(GSCAnalytics.date)).where(GSCAnalytics.site_url == site_url)).first()
+                if d:
+                    if isinstance(d, str):
+                        from datetime import datetime as _dt
+                        try:
+                            d = _dt.strptime(d, "%Y-%m-%d").date()
+                        except (ValueError, TypeError):
+                            d = None
+                    if d and (last_sync_date is None or d > last_sync_date):
+                        last_sync_date = d
+
+        last_sync_str = last_sync_date.strftime("%b %d, %Y") if hasattr(last_sync_date, 'strftime') else "Never"
+
         return Titled("SEO Otter Dashboard",
-            P("Monitor your sites' Google Search performance", cls="text-base-content/60 mb-6"),
+            Div(cls="page-header page-fade")(
+                H1("Dashboard", cls="text-2xl font-bold"),
+                P("Monitor your sites' Google Search performance", cls="subtitle"),
+            ),
+            Div(cls="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6")(
+                stat_card("Websites", total, icon="🌐"),
+                stat_card("Wuilt Stores", total_stores, icon="🏪"),
+                stat_card("Latest data", last_sync_str, icon="📅"),
+            ),
             Div(cls="flex items-center justify-between mb-4")(
-                Span(""),
-                Span(f"{total} site{'s' if total != 1 else ''}", cls="badge badge-soft badge-lg"),
+                H2("Your websites", cls="text-lg font-semibold"),
+                Span(f"{total} site{'s' if total != 1 else ''}", cls="badge badge-soft badge-sm"),
             ) if websites else "",
             Div(cls="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4")(
                 *map(render_site_card, websites),
-            ) if websites else Div(cls="alert alert-soft alert-info mb-6")(
-                Span("No websites added yet. Add your first website below."),
+            ) if websites else empty_state(
+                "🚀",
+                "Welcome to SEO Otter",
+                "Add your first website below to start syncing Google Search Console data and unlock SEO insights. You can also manage Wuilt e-commerce stores from the sidebar.",
             ),
+            Div(cls="mt-8")(
+                hint_box([
+                    Span(Strong("Tip: "), "Use the sidebar to navigate between your websites, Wuilt stores, and settings. Each site dashboard has tools for keywords, wins, content analysis, and more.", cls=""),
+                ], icon="💡"),
+            ) if websites else "",
             Divider(cls="my-8"),
             render_add_form(),
         )
@@ -626,59 +867,75 @@ def site(id: int):
         delete_modal_id = f"delete-modal-{id}"
 
         return Title(website.name), Main(cls="container")(
-            Div(cls="flex flex-col sm:flex-row sm:items-center gap-3 mb-6")(
-                Div(cls="flex items-center gap-3")(
-                    Img(src=_favicon_url(domain, 48), alt="", cls="w-10 h-10 rounded hidden sm:block",
-                        loading="lazy",
-                        onerror=f"this.style.display='none'"),
-                    Div(
-                        H1(website.name, cls="text-2xl font-bold"),
-                        P(website.url, cls="text-sm text-base-content/50"),
+            A("← Dashboard", href="/", cls="text-sm text-base-content/60 hover:text-primary mb-3 inline-flex items-center gap-1"),
+            Div(cls="page-header page-fade")(
+                Div(cls="page-header-row")(
+                    Div(cls="flex items-center gap-3 grow min-w-0")(
+                        Img(src=_favicon_url(domain, 48), alt="", cls="w-12 h-12 rounded-lg bg-base-200 p-1 hidden sm:block",
+                            loading="lazy",
+                            onerror=f"this.style.display='none'"),
+                        Div(cls="min-w-0")(
+                            H1(website.name, cls="text-2xl font-bold truncate"),
+                            P(website.url, cls="text-sm text-base-content/50 truncate"),
+                        ),
                     ),
-                ),
-                Div(cls="sm:ml-auto flex items-center gap-2", id="sync-btn-area")(
-                    Button("Delete", cls="btn btn-soft btn-error btn-sm",
-                           onclick=f"document.getElementById('{delete_modal_id}').showModal()"),
-                    Btn("Sync GSC Data",
-                        cls="-outline -primary -sm",
-                        hx_post=sync_start.to(id=id),
-                        hx_target="#sync-btn-area",
-                        hx_swap="innerHTML",
+                    Div(cls="page-header actions", id="sync-btn-area")(
+                        Button("🗑 Delete", cls="btn btn-soft btn-error btn-sm",
+                               onclick=f"document.getElementById('{delete_modal_id}').showModal()"),
+                        Btn("🔄 Sync GSC Data",
+                            cls="btn-outline btn-primary btn-sm",
+                            hx_post=sync_start.to(id=id),
+                            hx_target="#sync-btn-area",
+                            hx_swap="outerHTML",
+                        ),
                     ),
                 ),
             ),
             Dialog(id=delete_modal_id, cls="modal")(
                 Div(cls="modal-box")(
-                    H3("Delete Website?", cls="font-bold text-lg mb-2"),
-                    P(f"Are you sure you want to delete {website.name}? All associated data will be removed.", cls="text-base-content/60 mb-6"),
+                    Div(cls="flex items-center gap-3 mb-3")(
+                        Span("⚠️", cls="text-2xl"),
+                        H3("Delete this website?", cls="font-bold text-lg"),
+                    ),
+                    P(f"This will permanently delete ", Span(website.name, cls="font-semibold"), " and all of its associated data including GSC analytics, tracked keywords, and SEO reports. This action cannot be undone.", cls="text-base-content/60 mb-6"),
                     Div(cls="modal-action")(
                         Form(method="dialog")(Button("Cancel", cls="btn btn-ghost")),
                         Form(method="post", action=delete_website.to(), cls="inline")(
                             Input(type="hidden", name="id", value=str(id)),
-                            Button("Delete", cls="btn btn-error", type="submit"),
+                            Button("Yes, delete forever", cls="btn btn-error", type="submit"),
                         ),
                     ),
                 ),
                 Form(method="dialog", cls="modal-backdrop")(Button("close")),
             ),
-            render_metrics(metrics),
-            Details(cls="card card-border bg-base-100 mb-6")(
-                Summary(cls="card-body cursor-pointer list-none [&::-webkit-details-marker]:hidden")(
-                    Div(cls="flex items-center justify-between")(
-                        H2("Top Pages", cls="card-title text-lg"),
-                        Span("▼", cls="text-base-content/40 transition-transform [[open]_&]:rotate-180"),
+            render_metrics(metrics, session, site_url),
+            Div(cls="section mt-6")(
+                Div(cls="flex items-center justify-between mb-3")(
+                    Div()(
+                        H2("📄 Top Pages", cls="section-title"),
+                        P("Your highest-trafficking pages over the last 30 days", cls="section-subtitle"),
                     ),
+                    A("View all →", href=top_pages.to(id=id), cls="btn btn-ghost btn-sm"),
                 ),
-                Div(cls="card-body pt-0")(
-                    Div(cls="flex items-center justify-between mb-3")(
-                        Span(cls="text-sm text-base-content/60")("pages ranked by metrics"),
-                        A("View all →", href=top_pages.to(id=id), cls="link link-primary text-sm"),
+                render_top_pages_table(tp),
+            ) if tp else Div(cls="section mt-6")(
+                Div(cls="flex items-center justify-between mb-3")(
+                    Div()(
+                        H2("📄 Top Pages", cls="section-title"),
+                        P("Your highest-trafficking pages over the last 30 days", cls="section-subtitle"),
                     ),
-                    render_top_pages_table(tp),
+                    A("Sync now →", href="#", cls="btn btn-primary btn-sm",
+                      onclick=f"document.getElementById('sync-btn-area').querySelector('button[hx_post]').click()"),
                 ),
+                empty_state("📊", "No GSC data yet", "Sync your Google Search Console data to see your top-performing pages here.", cta_text="Sync Now", cta_href="#"),
             ),
-            Div(
-                H2("Site Tools", cls="text-lg font-semibold mb-4"),
+            Div(cls="section mt-6")(
+                Div(cls="flex items-center justify-between mb-4")(
+                    Div()(
+                        H2("🛠 Site Tools", cls="section-title"),
+                        P("Explore SEO insights for this website", cls="section-subtitle"),
+                    ),
+                ),
                 render_nav_cards(id),
             ),
         ),
@@ -713,39 +970,48 @@ METRIC_ICONS = {
     "avg_ctr": "📈",
 }
 
-def render_metrics(metrics):
+def render_metrics(metrics, session=None, site_url=None):
     items = [
-        ("clicks", f"{metrics['clicks']:,}", "Clicks (30d)"),
-        ("impressions", f"{metrics['impressions']:,}", "Impressions (30d)"),
-        ("avg_position", f"{metrics['avg_position']:.1f}", "Avg Position"),
-        ("avg_ctr", f"{metrics['avg_ctr']:.1f}%", "Avg CTR"),
+        ("clicks", f"{metrics['clicks']:,}", "Clicks (30d)", "👆"),
+        ("impressions", f"{metrics['impressions']:,}", "Impressions (30d)", "👁️"),
+        ("avg_position", f"{metrics['avg_position']:.1f}", "Avg Position", "📍"),
+        ("avg_ctr", f"{metrics['avg_ctr']:.1f}%", "Avg CTR", "📈"),
     ]
-    return Div(cls="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6")(
-        *[Div(cls="stat bg-base-100 rounded-xl shadow-sm border border-base-200 p-4")(
-            Div(cls="flex items-center gap-3 mb-2")(
-                Span(METRIC_ICONS.get(key, "📊"), cls="text-xl"),
-                Span(label, cls="text-sm font-medium text-base-content/60"),
-            ),
-            Div(value, cls="text-2xl font-bold"),
-        ) for key, value, label in items],
+    has_data = metrics['clicks'] > 0 or metrics['impressions'] > 0
+    return Div(cls="grid grid-cols-2 lg:grid-cols-4 gap-4")(
+        *[stat_card(label, value, icon=icon) for key, value, label, icon in items],
+    ) if has_data else Div(cls="grid grid-cols-2 lg:grid-cols-4 gap-4")(
+        *[stat_card(label, value, icon=icon) for key, value, label, icon in items],
     )
 
 
 def render_top_pages_table(rows):
     if not rows:
-        return P("No top pages data")
-    return Table(
-        Thead(Tr(Th("Page"), Th("Clicks"), Th("Impr"), Th("Pos"), Th("CTR"))),
-        Tbody(*[
-            Tr(
-                Td(r["page"][:60] + "..." if len(r["page"]) > 60 else r["page"]),
-                Td(f"{r['total_clicks']:,}"),
-                Td(f"{r['total_impressions']:,}"),
-                Td(f"{r['avg_position']:.1f}"),
-                Td(f"{r['avg_ctr'] * 100:.1f}%"),
-            ) for r in rows[:10]
-        ]),
-        cls="-zebra",
+        return P("No page data available.", cls="text-sm text-base-content/50 italic")
+    return Div(cls="overflow-x-auto")(
+        Table(cls="table table-zebra table-hover")(
+            Thead(Tr(
+                Th("#", cls="w-8"),
+                Th("Page"),
+                Th("Clicks", cls="text-right"),
+                Th("Impr", cls="text-right"),
+                Th("Pos", cls="text-right"),
+                Th("CTR", cls="text-right"),
+            )),
+            Tbody(*[
+                Tr(
+                    Td(Span(str(i + 1), cls="text-base-content/40 text-xs"), cls="font-mono"),
+                    Td(
+                        A(r["page"], href=r["page"], target="_blank", cls="link link-hover text-sm truncate inline-block max-w-md",
+                          title=r["page"]),
+                    ),
+                    Td(f"{r['total_clicks']:,}", cls="text-right font-medium"),
+                    Td(f"{r['total_impressions']:,}", cls="text-right text-base-content/70"),
+                    Td(Span(f"{r['avg_position']:.1f}", cls="badge badge-ghost badge-sm"), cls="text-right"),
+                    Td(Span(f"{r['avg_ctr'] * 100:.1f}%", cls=("text-success" if r['avg_ctr'] * 100 >= 5 else "text-base-content/70")), cls="text-right"),
+                ) for i, r in enumerate(rows[:10])
+            ]),
+        ),
     )
 
 
@@ -2098,7 +2364,7 @@ def _render_schema_tab(id: int, tab: str):
         return P("No pages found. Run `seo-otter-report` via CLI first to sync URL mapping, or add articles.",
                  cls="text-sm text-base-content/60")
     return Div(
-        Div(cls="flex items-center justify-between mb-2")(
+        Div(cls="flex items-center justify-between mb-4")(
             Span(f"{len(pages)} pages", cls="text-sm text-base-content/60"),
             Div(cls="flex gap-2")(
                 Btn("Predict All", cls="btn btn-primary btn-sm",
@@ -2113,41 +2379,36 @@ def _render_schema_tab(id: int, tab: str):
                     hx_indicator="#validate-all-spinner"),
             ),
         ),
-        Div(id="predict-all-spinner", cls="htmx-indicator text-sm text-base-content/40 inline-flex items-center gap-1")(
-            Span(cls="loading loading-spinner loading-xs"),
-            "Predicting schemas for all pages...",
-        ),
-        Div(id="validate-all-spinner", cls="htmx-indicator text-sm text-base-content/40 inline-flex items-center gap-1")(
-            Span(cls="loading loading-spinner loading-xs"),
-            "Validating all pages...",
-        ),
-        Div(cls="overflow-x-auto")(
-            Table(cls="table table-zebra table-sm")(
-            Thead(
-                Tr(Th("URL"), Th("Status"), Th("Action"))
-            ),
-            Tbody(
-                *[Tr(
-                    Td(A(p["url"], href=p["url"], target="_blank",
-                         cls="link link-primary text-sm truncate max-w-[400px] block")),
-                    Td(Div(id=f"schema-status-{p['id']}", cls="text-sm")),
-                    Td(Div(cls="flex flex-col gap-1")(
-                        Div(cls="flex gap-1")(
+        Div(cls="space-y-3")(
+            *[Div(cls="card card-compact bg-base-100 border border-base-300")(
+                Div(cls="card-body")(
+                    Div(cls="flex items-center justify-between gap-2")(
+                        A(p["url"], href=p["url"], target="_blank",
+                          cls="link link-primary text-sm truncate"),
+                        Div(cls="flex gap-1 shrink-0")(
                             Btn("Validate", cls="btn btn-outline btn-xs",
                                 hx_post=schema_check_page.to(id=id, page_url=p["url"]),
                                 hx_target=f"#schema-result-{p['id']}",
                                 hx_swap="innerHTML"),
-                            Btn("Predict Schema", cls="btn btn-outline btn-xs",
+                            Btn("Predict", cls="btn btn-outline btn-xs",
                                 hx_post=schema_predict.to(id=id, page_url=p["url"]),
                                 hx_target=f"#schema-result-{p['id']}",
                                 hx_swap="innerHTML"),
                         ),
-                        Div(id=f"schema-result-{p['id']}", cls="text-xs"),
-                    )),
-                ) for p in pages]
-            ),
-        )),
-        Div(id="schema-all-results"),
+                    ),
+                    Div(id=f"schema-result-{p['id']}"),
+                ),
+            ) for p in pages],
+        ),
+        Div(id="predict-all-spinner", cls="htmx-indicator text-sm text-base-content/40 inline-flex items-center gap-1 mt-3")(
+            Span(cls="loading loading-spinner loading-xs"),
+            "Predicting schemas for all pages...",
+        ),
+        Div(id="validate-all-spinner", cls="htmx-indicator text-sm text-base-content/40 inline-flex items-center gap-1 mt-3")(
+            Span(cls="loading loading-spinner loading-xs"),
+            "Validating all pages...",
+        ),
+        Div(id="schema-all-results", cls="mt-4"),
     )
 
 
@@ -2168,23 +2429,23 @@ def schema_predict(id: int, page_url: str):
         from trafilatura import fetch_url, extract
         html = fetch_url(page_url)
         if not html:
-            return Div(cls="alert alert-warning text-sm")(
+            return Div(cls="alert alert-warning text-sm mt-2")(
                 Span("Could not fetch page content"),
             )
         content = extract(html, output_format="markdown", favor_recall=True,
                           include_tables=True, include_links=False, include_images=False)
         if not content:
-            return Div(cls="alert alert-warning text-sm")(
+            return Div(cls="alert alert-warning text-sm mt-2")(
                 Span("Could not extract content from page"),
             )
         result = predict_schemas(content)
     except Exception as e:
-        return Div(cls="alert alert-error text-sm")(
+        return Div(cls="alert alert-error text-sm mt-2")(
             Span(f"Prediction failed: {e}"),
         )
     items = result.get("suggestions", [])
     reasoning = result.get("reasoning", "")
-    return Div(cls="space-y-1")(
+    return Div(cls="border-t border-base-200 pt-3 mt-3 space-y-2")(
         Div(cls="flex flex-wrap gap-x-4 gap-y-1")(
             *[Div(cls="flex items-center gap-2")(
                 Span(item["type"], cls="text-xs font-medium w-20"),
@@ -2192,7 +2453,7 @@ def schema_predict(id: int, page_url: str):
                 Span(f"{item['score']}%", cls="text-xs text-base-content/60 w-8"),
             ) for item in items],
         ),
-        P(reasoning, cls="text-xs text-base-content/50 mt-1"),
+        P(reasoning, cls="text-xs text-base-content/50 mt-1") if reasoning else "",
     )
 
 
@@ -2213,17 +2474,18 @@ def schema_check_validate_all(id: int):
             if m.url not in seen:
                 seen.add(m.url)
                 urls.append(m.url)
-        results = []
+        cards = []
         for url in urls:
             result = validate_page(url)
-            results.append(Div(
-                H3(A(url, href=url, target="_blank", cls="link link-primary text-sm"), cls="text-sm font-semibold mb-2 mt-4"),
-                _render_schema_result(result),
-                Div(cls="divider"),
+            cards.append(Div(cls="card card-compact bg-base-100 border border-base-300")(
+                Div(cls="card-body")(
+                    A(url, href=url, target="_blank", cls="link link-primary text-sm font-semibold mb-2"),
+                    _render_schema_result(result),
+                ),
             ))
-        if not results:
+        if not cards:
             return P("No pages found.", cls="text-sm text-base-content/60")
-        return Div(*results)
+        return Div(cls="space-y-3")(*cards)
     except Exception as e:
         return Div(cls="alert alert-error text-sm")(
             Span(f"Error: {e}"),
@@ -2247,7 +2509,7 @@ def schema_predict_all(id: int):
             if m.url not in seen:
                 seen.add(m.url)
                 urls.append(m.url)
-        results = []
+        cards = []
         for url in urls:
             try:
                 from trafilatura import fetch_url, extract
@@ -2261,23 +2523,24 @@ def schema_predict_all(id: int):
             except Exception as e:
                 pred = {"suggestions": [], "reasoning": str(e)}
             suggestions = pred.get("suggestions", [])
-            total = sum(s["score"] for s in suggestions) / max(len(suggestions), 1)
-            results.append(Div(
-                H3(A(url, href=url, target="_blank", cls="link link-primary text-sm"), cls="text-sm font-semibold mb-2 mt-4"),
-                Div(cls="space-y-1")(
-                    Div(cls="flex flex-wrap gap-x-4 gap-y-1")(
-                        *[Div(cls="flex items-center gap-2")(
-                            Span(item["type"], cls="text-xs font-medium w-20"),
-                            Progress(cls="-primary h-2", value=str(item["score"]), max="100"),
-                            Span(f"{item['score']}%", cls="text-xs text-base-content/60 w-8"),
-                        ) for item in suggestions],
-                    ),
-                    P(pred.get("reasoning", ""), cls="text-xs text-base-content/50 mt-1"),
+            cards.append(Div(cls="card card-compact bg-base-100 border border-base-300")(
+                Div(cls="card-body")(
+                    A(url, href=url, target="_blank", cls="link link-primary text-sm font-semibold mb-2"),
+                    Div(cls="space-y-1")(
+                        Div(cls="flex flex-wrap gap-x-4 gap-y-1")(
+                            *[Div(cls="flex items-center gap-2")(
+                                Span(item["type"], cls="text-xs font-medium w-20"),
+                                Progress(cls="-primary h-2", value=str(item["score"]), max="100"),
+                                Span(f"{item['score']}%", cls="text-xs text-base-content/60 w-8"),
+                            ) for item in suggestions],
+                        ),
+                        P(pred.get("reasoning", ""), cls="text-xs text-base-content/50 mt-1") if pred.get("reasoning") else "",
+                    ) if suggestions else P(pred.get("reasoning", ""), cls="text-xs text-warning"),
                 ),
             ))
-        if not results:
+        if not cards:
             return P("No pages found.", cls="text-sm text-base-content/60")
-        return Div(*results)
+        return Div(cls="space-y-3")(*cards)
     except Exception as e:
         return Div(cls="alert alert-error text-sm")(
             Span(f"Error: {e}"),
@@ -2297,40 +2560,43 @@ def schema_check_url(id: int, url: str):
 
 def _render_schema_result(result: dict):
     if result.get("error"):
-        return Div(cls="alert alert-error")(
+        return Div(cls="alert alert-error text-sm mt-2")(
             Span(f"Failed to fetch URL (HTTP {result['fetch_status']}): {result['error']}"),
         )
     summary = result.get("summary", {})
-    return Div(
-        Div(cls="flex items-center gap-3 mb-4")(
+    total = summary.get("total_schemas", 0)
+    valid = summary.get("valid_count", 0)
+    return Div(cls="border-t border-base-200 pt-3 mt-3 space-y-2")(
+        Div(cls="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm")(
             _schema_status_badge(result),
-            Span(f"{summary.get('total_schemas', 0)} schema(s) found", cls="text-sm"),
-            Span(f"Types: {', '.join(summary.get('types_found', [])) or 'none'}", cls="text-sm text-base-content/60"),
-            Span(f"Google supported: {'Yes' if summary.get('has_google_supported') else 'No'}",
-                 cls=f"text-sm {'text-success' if summary.get('has_google_supported') else 'text-warning'}"),
+            Span(f"{total} schema(s) found", cls="font-medium"),
+            Span(f"Types: {', '.join(summary.get('types_found', [])) or 'none'}", cls="text-base-content/60"),
+            Span(cls="badge badge-xs " + ("badge-success" if summary.get('has_google_supported') else "badge-ghost"))(
+                "Google supported" if summary.get('has_google_supported') else "Not supported"
+            ),
         ),
         *[_render_schema_block(s) for s in result.get("schemas_found", [])],
     )
 
 
 def _render_schema_block(s: dict):
-    status_icon = Span("✓", cls="text-success") if s["is_valid"] else Span("✗", cls="text-error")
+    status_icon = Span("✓", cls="text-success font-bold") if s["is_valid"] else Span("✗", cls="text-error font-bold")
     items = []
     if s["fields_missing_required"]:
-        items.append(Div(cls="text-xs text-error")(
+        items.append(Div(cls="text-sm text-error")(
             Span("Missing required: "),
             Span(", ".join(s["fields_missing_required"]), cls="font-mono"),
         ))
     if s["fields_missing_recommended"]:
-        items.append(Div(cls="text-xs text-warning")(
+        items.append(Div(cls="text-sm text-warning")(
             Span("Missing recommended: "),
             Span(", ".join(s["fields_missing_recommended"]), cls="font-mono"),
         ))
     for w in s["warnings"]:
-        items.append(Div(w, cls="text-xs text-warning"))
-    return Div(cls="collapse collapse-arrow border border-base-300 rounded-lg mb-2")(
+        items.append(Div(w, cls="text-sm text-warning"))
+    return Div(cls="collapse collapse-arrow border border-base-300 rounded-lg")(
         Input(type="checkbox", cls="peer"),
-        Div(cls="collapse-title text-sm font-medium flex items-center gap-2")(
+        Div(cls="collapse-title text-sm font-medium flex items-center gap-2 min-h-0 py-2")(
             status_icon,
             Span(f"{s['type']} ({s['format']})"),
             Span(cls="badge badge-xs " + ("badge-success" if s["google_supported"] else "badge-ghost"))(
@@ -2339,7 +2605,7 @@ def _render_schema_block(s: dict):
         ),
         Div(cls="collapse-content")(
             *items,
-            Pre(cls="mt-2 p-2 bg-base-200 rounded text-xs overflow-x-auto max-h-48 overflow-y-auto")(
+            Pre(cls="mt-2 p-3 bg-base-200 rounded text-xs overflow-x-auto max-h-48 overflow-y-auto")(
                 json.dumps(s["raw"], indent=2, ensure_ascii=False),
             ) if s.get("raw") else "",
         ),
@@ -3043,36 +3309,106 @@ def settings_test_gsc(GOOGLE_CLIENT_ID: str = "", GOOGLE_CLIENT_SECRET: str = ""
 
 # ── Wuilt Store Management ────────────────────────────────────────
 
+@rt("/wuILT/add")
+def get():
+    return Title("Add Wuilt Store"), Main(cls="container")(
+        A("← All Stores", href="/wuILT", cls="text-sm text-base-content/60 hover:text-primary mb-3 inline-flex items-center gap-1"),
+        Div(cls="page-header page-fade")(
+            H1("🏪 Add Wuilt Store", cls="text-2xl font-bold"),
+            P("Connect a Wuilt e-commerce store to sync products and optimize SEO", cls="subtitle"),
+        ),
+        Div(cls="max-w-2xl")(
+            hint_box("You'll find your Store ID and API Key in your Wuilt dashboard under Settings → API. The store domain should match the domain in Google Search Console.", icon="💡"),
+            Div(cls="section mt-4")(
+                Form(method="post", action="/wuILT/add")(
+                    Div(cls="grid grid-cols-1 md:grid-cols-2 gap-4")(
+                        Fieldset(FieldsetLegend(cls="text-xs font-medium")("Store Name *"),
+                            Input(name="name", placeholder="My Store", required=True, cls="input w-full"),
+                            P("A friendly display name", cls="text-xs text-base-content/50 mt-1")),
+                        Fieldset(FieldsetLegend(cls="text-xs font-medium")("Store ID *"),
+                            Input(name="store_id", placeholder="Store_...", required=True, cls="input w-full font-mono"),
+                            P("From Wuilt → Settings → API", cls="text-xs text-base-content/50 mt-1")),
+                        Fieldset(FieldsetLegend(cls="text-xs font-medium")("API Key *"),
+                            Input(name="api_key", type="password", required=True, cls="input w-full"),
+                            P("Stored securely, never displayed again", cls="text-xs text-base-content/50 mt-1")),
+                        Fieldset(FieldsetLegend(cls="text-xs font-medium")("Locale"),
+                            Select(
+                                Option("Arabic (ar)", value="ar", selected=True),
+                                Option("English (en)", value="en"),
+                                name="locale", cls="select w-full"),
+                            P("Default locale for product URLs", cls="text-xs text-base-content/50 mt-1")),
+                        Fieldset(FieldsetLegend(cls="text-xs font-medium")("Store Domain"),
+                            Input(name="store_domain", placeholder="example.com", cls="input w-full"),
+                            P("Used to correlate with GSC data", cls="text-xs text-base-content/50 mt-1"),
+                            cls="md:col-span-2"),
+                    ),
+                    Div(cls="mt-6 flex items-center justify-between gap-2 pt-4 border-t border-base-200")(
+                        P("After adding, you can sync products and pages from the store dashboard.", cls="text-xs text-base-content/50"),
+                        Div(cls="flex gap-2")(
+                            A("Cancel", href="/wuILT", cls="btn btn-ghost"),
+                            Btn("Add Store →", cls="btn btn-primary", type="submit"),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+@rt("/wuILT/add")
+def post(name: str, store_id: str, api_key: str, locale: str = "ar", store_domain: str = ""):
+    with get_session() as session:
+        add_or_update_wuilt_store(session, store_id=store_id, name=name, api_key=api_key, locale=locale, store_domain=store_domain)
+        session.commit()
+    return RedirectResponse("/wuILT", status_code=303)
+
+
 @rt("/wuILT")
 def wuilt_list():
     with get_session() as session:
         stores = session.exec(select(WuiltStore)).all()
+        total = len(stores)
         return Title("Wuilt Stores"), Main(cls="container")(
-            H1("Wuilt Stores", cls="text-2xl font-bold mb-4"),
-            A("+ Add Store", href="/wuILT/add", cls="btn btn-primary btn-sm mb-4"),
-            Div(cls="overflow-x-auto")(
-                Table(cls="table table-zebra")(
-                    Thead(Tr(Th("ID"), Th("Name"), Th("Store ID"), Th("Locale"), Th("Domain"), Th("Actions"))),
-                    Tbody(*[
-                        Tr(
-                            Td(str(s.id)),
-                            Td(s.name),
-                            Td(s.store_id),
-                            Td(s.locale),
-                            Td(s.store_domain or "—"),
-                            Td(Div(cls="flex gap-1")(
-                                A("View", href=f"/wuILT/{s.id}", cls="btn btn-xs btn-soft btn-primary"),
-                                A("Edit", href=f"/wuILT/{s.id}/edit", cls="btn btn-xs btn-soft"),
-                                A("Sync", href=f"/wuILT/{s.id}/sync", cls="btn btn-xs btn-soft btn-secondary"),
-                                Form(method="post", action=f"/wuILT/{s.id}/delete", cls="inline")(
-                                    Btn("Delete", cls="-error -xs", type="submit"),
-                                ),
-                            )),
-                        ) for s in stores
-                    ]) if stores else Tr(Td("No stores yet.", colspan="6")),
+            page_header(
+                "🏪 Wuilt Stores",
+                f"{total} store{'s' if total != 1 else ''} connected" if stores else "Connect your Wuilt e-commerce stores to optimize product SEO",
+                actions=[A("+ Add Store", href="/wuILT/add", cls="btn btn-primary btn-sm")],
             ),
-        ),
-    )
+            Div(cls="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4")(
+                *[A(
+                    Div(cls="card-body p-5")(
+                        Div(cls="flex items-start justify-between mb-3")(
+                            Div(cls="flex items-center gap-3 min-w-0")(
+                                Div(cls="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0")("🏪"),
+                                Div(cls="min-w-0")(
+                                    H3(s.name, cls="card-title text-base truncate"),
+                                    P(s.store_id, cls="text-xs text-base-content/50 font-mono truncate"),
+                                ),
+                            ),
+                            Span(s.locale.upper(), cls="badge badge-soft badge-sm shrink-0"),
+                        ),
+                        Div(cls="flex items-center justify-between text-xs text-base-content/50 pt-3 border-t border-base-200")(
+                            Div(cls="flex items-center gap-1 truncate")(
+                                Span("🌐"),
+                                Span(s.store_domain or "No domain", cls="truncate"),
+                            ),
+                            Span("→", cls="text-base-content/30 group-hover:text-primary"),
+                        ),
+                    ),
+                    href=f"/wuILT/{s.id}",
+                    cls="card card-border bg-base-100 hover:bg-base-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 no-underline group",
+                ) for s in stores]
+            ) if stores else empty_state(
+                "🏪",
+                "No Wuilt stores yet",
+                "Connect your first Wuilt e-commerce store to sync products, optimize SEO, and track Google Search Console performance for your storefront.",
+                cta_text="Add Your First Store",
+                cta_href="/wuILT/add",
+            ),
+            Div(cls="mt-6")(
+                hint_box("Stores connect via Wuilt's GraphQL API. You'll need your Store ID and API key from your Wuilt dashboard.", icon="💡"),
+            ) if not stores else "",
+        )
 
 
 @rt("/wuILT/{store_pk:int}")
@@ -3083,130 +3419,183 @@ def wuilt_store(store_pk: int):
             return Titled("Store not found", P("Store not found"))
         products = get_wuilt_products(session, store_pk)
         pages = get_wuilt_pages(session, store_pk)
-        website = None
-        site_url = None
-        base_url = None
-        store_metrics = None
-        if store.website_id:
-            website = session.get(Website, store.website_id)
-        if not website and store.store_domain:
-            raw = store.store_domain.replace("https://", "").replace("http://", "").rstrip("/")
-            for loc in ("/ar", "/en"):
-                if raw.endswith(loc):
-                    raw = raw[: -len(loc)]
-                    break
-            website = session.exec(select(Website).where(Website.url.contains(raw))).first()
-        if website:
-            domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
-            site_url = f"sc-domain:{domain}"
-            base_url = website.url.rstrip("/")
-            store_metrics = get_site_metrics(session, site_url, days=30)
-        elif store.store_domain:
-            base_url = _store_base_url(store)
-            raw_domain = base_url.replace("https://", "")
-            site_url = f"sc-domain:{raw_domain}"
-            store_metrics = get_site_metrics(session, site_url, days=30)
+        website, site_url, base_url = _resolve_store_site(store, session)
+        store_metrics = get_site_metrics(session, site_url, days=30) if site_url else None
+    store_delete_modal_id = f"store-delete-modal-{store_pk}"
+    try:
+        store_seo = sync_wuilt_store(api_key=store.api_key, store_id=store.store_id, locale=store.locale)
+    except Exception:
+        store_seo = None
+    try:
+        client = WuiltClient(api_key=store.api_key, store_id=store.store_id, locale=store.locale)
+        collections = client.get_collections()
+    except Exception:
+        collections = []
     return Title(store.name), Main(cls="container")(
-        A("← All Stores", href="/wuILT", cls="link link-primary mb-4"),
-        Div(cls="flex items-center justify-between mb-4")(
-            H1(store.name, cls="text-2xl font-bold"),
-            Div(cls="flex gap-2")(
-                A("Edit", href=f"/wuILT/{store_pk}/edit", cls="btn btn-sm btn-outline"),
-                A("Sync Products", href=f"/wuILT/{store_pk}/sync", cls="btn btn-sm btn-outline btn-primary"),
-                A("Sync Pages", href=f"/wuILT/{store_pk}/sync-pages", cls="btn btn-sm btn-outline btn-secondary"),
-                A("Optimize All", href=f"/wuILT/{store_pk}/optimize", cls="btn btn-sm btn-primary"),
-            ),
-        ),
-        Div(cls="stats shadow mb-6")(
-            Div(cls="stat")(
-                Div("Store ID", cls="stat-title"),
-                Div(store.store_id, cls="stat-value text-sm"),
-            ),
-            Div(cls="stat")(
-                Div("Locale", cls="stat-title"),
-                Div(store.locale, cls="stat-value text-sm"),
-            ),
-            Div(cls="stat")(
-                Div("Domain", cls="stat-title"),
-                Div(store.store_domain or "—", cls="stat-value text-sm"),
-            ),
-        ),
-        Div(cls="alert alert-soft mb-4")(
-            Span("Linked to Website: "),
-            A(website.name or website.url, href=site.to(id=website.id), cls="link link-primary font-medium") if website and store.website_id
-            else Span(f"Using store_domain: {store.store_domain}" if store.store_domain else "No domain configured — set store_domain or link a Website for GSC integration.", cls="text-base-content/60"),
-            Span("📊", cls="text-lg ml-auto"),
-        ) if (website or store.store_domain or not store.website_id) else "",
-        Details(cls="card card-border bg-base-100 mb-6" + (" " if store_metrics else ""),
-                **({"open": "true"} if store_metrics else {}))(
-            Summary(cls="card-body cursor-pointer list-none [&::-webkit-details-marker]:hidden")(
-                Div(cls="flex items-center justify-between")(
-                    H2("GSC Performance (30d)", cls="card-title text-lg"),
-                    Span("▼", cls="text-base-content/40 transition-transform [[open]_&]:rotate-180"),
+        A("← All Stores", href="/wuILT", cls="text-sm text-base-content/60 hover:text-primary mb-3 inline-flex items-center gap-1"),
+        Div(cls="page-header page-fade")(
+            Div(cls="page-header-row")(
+                Div(cls="flex items-center gap-3 grow min-w-0")(
+                    Div(cls="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-2xl shrink-0")("🏪"),
+                    Div(cls="min-w-0")(
+                        H1(store.name, cls="text-2xl font-bold truncate"),
+                        P(Span("Store ID: ", cls="text-base-content/50"), Span(store.store_id, cls="font-mono text-xs"), cls="text-sm truncate"),
+                    ),
+                ),
+                Div(cls="page-header actions")(
+                    Button("🗑 Delete", cls="btn btn-soft btn-error btn-sm",
+                           onclick=f"document.getElementById('{store_delete_modal_id}').showModal()"),
+                    A("📦 Sync Products", href=f"/wuILT/{store_pk}/sync", cls="btn btn-outline btn-primary btn-sm"),
+                    A("📄 Sync Pages", href=f"/wuILT/{store_pk}/sync-pages", cls="btn btn-outline btn-secondary btn-sm"),
+                    A("✨ Optimize All", href=f"/wuILT/{store_pk}/optimize", cls="btn btn-primary btn-sm"),
                 ),
             ),
-            Div(cls="card-body pt-0")(
-                Div(cls="stats shadow")(
-                    Div(cls="stat")(
-                        Div("Clicks", cls="stat-title"),
-                        Div(f"{store_metrics['clicks']:,}" if store_metrics else "—", cls="stat-value"),
+        ),
+        Dialog(id=store_delete_modal_id, cls="modal")(
+            Div(cls="modal-box")(
+                Div(cls="flex items-center gap-3 mb-3")(
+                    Span("⚠️", cls="text-2xl"),
+                    H3("Delete this store?", cls="font-bold text-lg"),
+                ),
+                P("This will permanently delete ", Span(store.name, cls="font-semibold"), " and all of its products, pages, and SEO data. This action cannot be undone.", cls="text-base-content/60 mb-6"),
+                Div(cls="modal-action")(
+                    Form(method="dialog")(Button("Cancel", cls="btn btn-ghost")),
+                    Form(method="post", action=f"/wuILT/{store_pk}/delete", cls="inline")(
+                        Button("Yes, delete forever", cls="btn btn-error", type="submit"),
                     ),
-                    Div(cls="stat")(
-                        Div("Impressions", cls="stat-title"),
-                        Div(f"{store_metrics['impressions']:,}" if store_metrics else "—", cls="stat-value"),
-                    ),
-                    Div(cls="stat")(
-                        Div("Avg Position", cls="stat-title"),
-                        Div(f"{store_metrics['avg_position']}" if store_metrics else "—", cls="stat-value"),
-                    ),
-                    Div(cls="stat")(
-                        Div("Avg CTR", cls="stat-title"),
-                        Div(f"{store_metrics['avg_ctr']}%" if store_metrics else "—", cls="stat-value"),
-                    ),
-                ) if store_metrics else P("No GSC data synced yet. Sync GSC data from the linked Website dashboard first.", cls="text-sm text-base-content/60"),
+                ),
+            ),
+            Form(method="dialog", cls="modal-backdrop")(Button("close")),
+        ),
+        Div(cls="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6")(
+            stat_card("Products", len(products), icon="📦", href=f"#products"),
+            stat_card("Collections", len(collections), icon="📚", href=f"#collections"),
+            stat_card("Pages", len(pages), icon="📄", href=f"#pages"),
+            stat_card("Locale", store.locale.upper(), icon="🌐"),
+        ),
+        Div(cls="section mb-6")(
+            Div(cls="flex items-center justify-between mb-4")(
+                Div()(
+                    H2("🏠 Homepage SEO", cls="section-title"),
+                    P("How your store appears in search engine results", cls="section-subtitle"),
+                ),
+                A("📊 GSC Data →", href=f"/wuILT/{store_pk}/homepage-gsc", cls="btn btn-ghost btn-sm") if base_url else "",
+            ),
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4")(
+                Div()(
+                    Span("SEO Title", cls="label"),
+                    P(store_seo["seo_title"] or "—", cls="font-medium mt-1") if store_seo else P("Could not load from API", cls="text-sm text-error mt-1"),
+                ),
+                Div()(
+                    Span("SEO Description", cls="label"),
+                    P(store_seo["seo_description"] or "—", cls="text-base-content/70 mt-1 line-clamp-3") if store_seo else P("Could not load from API", cls="text-sm text-error mt-1"),
+                ),
+            ),
+            Div(cls="flex flex-wrap gap-2 pt-3 border-t border-base-200")(
+                A("✏️ Edit SEO", href=f"/wuILT/{store_pk}/edit", cls="btn btn-sm btn-outline"),
+                A("🌐 View Store", href=f"https://{store.store_domain}" if store.store_domain else "#",
+                  target="_blank", cls="btn btn-sm btn-ghost" + ("" if store.store_domain else " btn-disabled")),
+            ) if store_seo else "",
+        ),
+        Div(cls="mb-6")(
+            hint_box([
+                Span(Strong("🔗 Linked to Website: "), cls=""),
+                A(website.name or website.url, href=site.to(id=website.id), cls="link link-primary font-medium") if website and store.website_id
+                else Span(f"Using store_domain: {store.store_domain or '(not set)'}. Link a Website for better GSC correlation.", cls="text-base-content/70"),
+            ], icon="ℹ️"),
+        ) if (website or store.store_domain or not store.website_id) else "",
+        Div(cls="section mb-6")(
+            Div(cls="flex items-center justify-between mb-4")(
+                Div()(
+                    H2("📊 GSC Performance (30d)", cls="section-title"),
+                    P("Google Search Console metrics for this store's domain", cls="section-subtitle"),
+                ),
+            ),
+            Div(cls="grid grid-cols-2 lg:grid-cols-4 gap-4")(
+                stat_card("Clicks", f"{store_metrics['clicks']:,}" if store_metrics else "—", icon="👆"),
+                stat_card("Impressions", f"{store_metrics['impressions']:,}" if store_metrics else "—", icon="👁️"),
+                stat_card("Avg Position", f"{store_metrics['avg_position']}" if store_metrics else "—", icon="📍"),
+                stat_card("Avg CTR", f"{store_metrics['avg_ctr']}%" if store_metrics else "—", icon="📈"),
+            ) if store_metrics else Div(cls="text-center py-6 text-base-content/50")(
+                Span("📊", cls="text-3xl block mb-2 opacity-50"),
+                P("No GSC data synced yet", cls="font-medium"),
+                P("Sync GSC data from the linked Website dashboard first.", cls="text-sm mt-1"),
             ),
         ) if site_url else "",
-        H2(f"Products ({len(products)})", cls="text-lg font-semibold mb-3"),
-        Div(cls="overflow-x-auto mb-8")(
+        Div(cls="section mb-6", id="products")(
+            Div(cls="flex items-center justify-between mb-4")(
+                Div()(
+                    H2(f"📦 Products ({len(products)})", cls="section-title"),
+                    P("Your synced product catalog", cls="section-subtitle"),
+                ),
+                A("Sync →", href=f"/wuILT/{store_pk}/sync", cls="btn btn-ghost btn-sm"),
+            ),
+            Div(cls="overflow-x-auto")(
+                Table(cls="table table-zebra table-hover")(
+                    Thead(Tr(
+                        Th("Title"),
+                        Th("Handle"),
+                        Th("Price", cls="text-right"),
+                        Th("Optimized", cls="text-center"),
+                        Th("GSC", cls="text-center"),
+                        Th("Schema", cls="text-center"),
+                        Th("Synced", cls="text-right"),
+                    )),
+                    Tbody(*[
+                        Tr(
+                            Td(A(p.title, href=f"/wuILT/{store_pk}/product-gsc/{p.id}" if base_url else "#",
+                                cls="link link-hover font-medium text-sm"),
+                               cls="max-w-64"),
+                            Td(Span(p.handle, cls="text-xs text-base-content/50 font-mono"), cls="max-w-40"),
+                            Td(Span(f"{p.price:.2f}" if p.price is not None else "—", cls="font-mono text-sm"),
+                               cls="text-right"),
+                            Td(
+                                Span("✅", cls="text-success", title=f"Optimized {p.last_optimized_at.strftime('%Y-%m-%d %H:%M')}") if p.last_optimized_at
+                                else Span("—", cls="text-base-content/30"),
+                                cls="text-center",
+                            ),
+                            Td(
+                                A("📊", href=f"/wuILT/{store_pk}/product-gsc/{p.id}", cls="btn btn-xs btn-ghost",
+                                  title="View GSC analytics for this product") if base_url
+                                else Span("—", cls="text-base-content/30", title="Set store_domain or link a Website to enable GSC"),
+                                cls="text-center",
+                            ),
+                            Td(
+                                A("🔍", href="#", cls="btn btn-xs btn-ghost",
+                                  hx_get=f"/wuILT/{store_pk}/product-schema/{p.id}",
+                                  hx_target="#wuilt-modal-content",
+                                  hx_swap="innerHTML",
+                                  title="Validate schema & predict schemas"),
+                                cls="text-center",
+                            ),
+                            Td(p.synced_at.strftime("%b %d") if p.synced_at else "—", cls="text-right text-xs text-base-content/50"),
+                        ) for p in products
+                    ]) if products else Tr(Td(empty_state("📦", "No products yet", "Sync your store to import products from Wuilt.", cta_text="Sync Products", cta_href=f"/wuILT/{store_pk}/sync"), colspan="7")),
+                ),
+            ),
+        ),
+        H2(f"Collections ({len(collections)})", cls="text-lg font-semibold mb-3"),
+        Div(cls="overflow-x-auto")(
             Table(cls="table table-zebra")(
-                Thead(Tr(Th("Title"), Th("Handle"), Th("Price"), Th("Optimized"), Th("GSC"), Th("Schema"), Th("Synced"))),
+                Thead(Tr(Th("Title"), Th("Handle"), Th("SEO Title"), Th("GSC"))),
                 Tbody(*[
                     Tr(
-                        Td(p.title, cls="font-medium"),
-                        Td(p.handle, cls="text-sm text-base-content/60"),
-                        Td(f"{p.price:.2f}" if p.price is not None else "—"),
+                        Td(c["title"], cls="font-medium"),
+                        Td(c["handle"], cls="text-sm text-base-content/60"),
+                        Td((c.get("seo") or {}).get("title") or "—", cls="text-sm"),
                         Td(
-                            Span("✅", cls="text-success", title=f"Optimized {p.last_optimized_at.strftime('%Y-%m-%d %H:%M')}") if p.last_optimized_at
-                            else A("✨", href="#", cls="btn btn-xs btn-ghost",
-                                   hx_get=f"/wuILT/{store_pk}/product-optimize/{p.id}",
-                                   hx_target="#wuilt-modal-content",
-                                   hx_swap="innerHTML",
-                                   title="Optimize SEO for this product"),
+                            A("📊", href=f"/wuILT/{store_pk}/collection-gsc/{c['handle']}", cls="btn btn-xs btn-ghost",
+                              title="View GSC analytics for this collection") if base_url
+                            else Span("—", cls="text-base-content/30"),
                         ),
-                        Td(
-                            A("📊", href="#", cls="btn btn-xs btn-ghost",
-                              hx_get=f"/wuILT/{store_pk}/product-gsc/{p.id}",
-                              hx_target="#wuilt-modal-content",
-                              hx_swap="innerHTML",
-                              title="View GSC analytics for this product") if base_url
-                            else Span("—", cls="text-base-content/30", title="Set store_domain or link a Website to enable GSC"),
-                        ),
-                        Td(
-                            A("🔍", href="#", cls="btn btn-xs btn-ghost",
-                              hx_get=f"/wuILT/{store_pk}/product-schema/{p.id}",
-                              hx_target="#wuilt-modal-content",
-                              hx_swap="innerHTML",
-                              title="Validate schema & predict schemas"),
-                        ),
-                        Td(p.synced_at.strftime("%Y-%m-%d") if p.synced_at else "—", cls="text-sm text-base-content/60"),
-                    ) for p in products
-                ]) if products else Tr(Td("No products synced yet.", colspan="7")),
+                    ) for c in collections
+                ]) if collections else Tr(Td("No collections synced yet.", colspan="4")),
             ),
         ),
         H2(f"Pages ({len(pages)})", cls="text-lg font-semibold mb-3"),
         Div(cls="overflow-x-auto")(
             Table(cls="table table-zebra")(
-                Thead(Tr(Th("Name"), Th("Handle"), Th("Type"), Th("Status"), Th("SEO Title"))),
+                Thead(Tr(Th("Name"), Th("Handle"), Th("Type"), Th("Status"), Th("SEO Title"), Th("GSC"))),
                 Tbody(*[
                     Tr(
                         Td(p.name),
@@ -3214,8 +3603,13 @@ def wuilt_store(store_pk: int):
                         Td(p.page_type, cls="text-sm"),
                         Td(Span(p.status, cls="badge badge-soft badge-sm " + ("badge-success" if p.status == "PUBLISHED" else "badge-ghost"))),
                         Td(p.seo_title or "—", cls="text-sm"),
+                        Td(
+                            A("📊", href=f"/wuILT/{store_pk}/page-gsc/{p.id}", cls="btn btn-xs btn-ghost",
+                              title="View GSC analytics for this page") if base_url
+                            else Span("—", cls="text-base-content/30", title="Set store_domain or link a Website to enable GSC"),
+                        ),
                     ) for p in pages
-                ]) if pages else Tr(Td("No pages synced yet.", colspan="5")),
+                ]) if pages else Tr(Td("No pages synced yet.", colspan="6")),
             ),
         ),
         Dialog(id="wuilt-modal", cls="modal")(
@@ -3241,6 +3635,149 @@ def _store_base_url(store) -> str:
     return f"https://{raw}"
 
 
+def _resolve_store_site(store, session):
+    """Resolve site_url, base_url, and website from a store record."""
+    website = None
+    site_url = None
+    base_url = None
+    if store.website_id:
+        website = session.get(Website, store.website_id)
+    if not website and store.store_domain:
+        raw = store.store_domain.replace("https://", "").replace("http://", "").rstrip("/")
+        for loc in ("/ar", "/en"):
+            if raw.endswith(loc):
+                raw = raw[: -len(loc)]
+                break
+        website = session.exec(select(Website).where(Website.url.contains(raw))).first()
+    if website:
+        domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
+        site_url = f"sc-domain:{domain}"
+        base_url = website.url.rstrip("/")
+    elif store.store_domain:
+        base_url = _store_base_url(store)
+        raw_domain = base_url.replace("https://", "")
+        site_url = f"sc-domain:{raw_domain}"
+    return website, site_url, base_url
+
+
+def _render_gsc_analysis_modal(session, site_url, page_url, title, page_type=""):
+    """Render full GSC analysis for any page URL (analytics, queries, trends, wins, green keywords, FAQ)."""
+    start, end = get_date_range("last_days", days=30)
+    analytics = get_page_analytics(session, site_url, page_url, start, end)
+    queries = get_top_queries(session, site_url, start, end, page_path=page_url, limit=20)
+    trends = detect_query_trends(session, site_url, page_path=page_url, days=30, limit=50)
+    wins = get_wins(session, site_url, start, end, page_url=page_url)
+
+    trend_map = {t["query"]: t for t in trends}
+    rising = [t for t in trends if t["trend"] == "rising"][:5]
+    declining = [t for t in trends if t["trend"] == "declining"][:5]
+    green = [t for t in trends if t["trend"] == "rising" and t["prev_impressions"] <= 5][:5]
+    faq_queries = extract_faq_queries(queries)
+    wins_page = [w for w in wins if w["avg_position"] >= 10][:5]
+
+    has_data = analytics['total_clicks'] > 0 or analytics['total_impressions'] > 0 or queries
+
+    if not has_data:
+        return empty_state(
+            "📊",
+            "No GSC data yet",
+            "This page hasn't accumulated enough Google Search Console data. Either this page is new, hasn't been indexed yet, or you need to sync GSC data from the linked Website dashboard.",
+        )
+
+    return Div(cls="space-y-6")(
+        Div(cls="section")(
+            Div(cls="flex items-center justify-between mb-4")(
+                Div()(
+                    H2("📈 Performance (30d)", cls="section-title"),
+                    P("Aggregate metrics from Google Search Console", cls="section-subtitle"),
+                ),
+            ),
+            Div(cls="grid grid-cols-2 lg:grid-cols-4 gap-4")(
+                stat_card("Clicks", f"{analytics['total_clicks']:,}", icon="👆"),
+                stat_card("Impressions", f"{analytics['total_impressions']:,}", icon="👁️"),
+                stat_card("Avg Position", f"{analytics['avg_position']:.1f}", icon="📍"),
+                stat_card("Avg CTR", f"{analytics['avg_ctr']*100:.1f}%" if analytics['avg_ctr'] else "0%", icon="📈"),
+            ),
+        ),
+        Div(cls="section")(
+            H2("🔍 Query Analysis", cls="section-title mb-1"),
+            P("Trends, opportunities, and patterns from search queries", cls="section-subtitle mb-4"),
+            Div(cls="grid grid-cols-1 md:grid-cols-2 gap-4")(
+                Div(cls="p-4 rounded-lg border border-success/20 bg-success/5")(
+                    Div(cls="flex items-center justify-between mb-2")(
+                        Span("📈 Rising", cls="font-semibold text-sm text-success"),
+                        Span(f"{len(rising)}", cls="badge badge-soft-success badge-sm"),
+                    ),
+                    Ul(*[Li(Span(t["query"], cls="font-medium text-sm"), Br(), Span(f"pos {t['recent_position']:.1f} · Δ{t['position_change']:+.1f}", cls="text-xs text-base-content/50")) for t in rising],
+                       cls="space-y-1.5") if rising else P("No rising queries yet", cls="text-sm text-base-content/50 italic"),
+                ),
+                Div(cls="p-4 rounded-lg border border-warning/20 bg-warning/5")(
+                    Div(cls="flex items-center justify-between mb-2")(
+                        Span("📉 Declining", cls="font-semibold text-sm text-warning"),
+                        Span(f"{len(declining)}", cls="badge badge-soft-warning badge-sm"),
+                    ),
+                    Ul(*[Li(Span(t["query"], cls="font-medium text-sm"), Br(), Span(f"pos {t['recent_position']:.1f} · Δ{t['position_change']:+.1f}", cls="text-xs text-base-content/50")) for t in declining],
+                       cls="space-y-1.5") if declining else P("No declining queries", cls="text-sm text-base-content/50 italic"),
+                ),
+                Div(cls="p-4 rounded-lg border border-accent/20 bg-accent/5")(
+                    Div(cls="flex items-center justify-between mb-2")(
+                        Span("🟢 Green Keywords", cls="font-semibold text-sm text-accent"),
+                        Span(f"{len(green)}", cls="badge badge-soft-info badge-sm"),
+                    ),
+                    Ul(*[Li(Span(t["query"], cls="font-medium text-sm"), Br(), Span(f"{t['recent_impressions']} impr · pos {t['recent_position']:.1f}", cls="text-xs text-base-content/50")) for t in green],
+                       cls="space-y-1.5") if green else P("No green keywords yet", cls="text-sm text-base-content/50 italic"),
+                ),
+                Div(cls="p-4 rounded-lg border border-info/20 bg-info/5")(
+                    Div(cls="flex items-center justify-between mb-2")(
+                        Span("🏆 Wins (low rank)", cls="font-semibold text-sm text-info"),
+                        Span(f"{len(wins_page)}", cls="badge badge-soft-info badge-sm"),
+                    ),
+                    Ul(*[Li(Span(w["query"], cls="font-medium text-sm"), Br(), Span(f"{w['total_impressions']} impr · pos {w['avg_position']:.1f}", cls="text-xs text-base-content/50")) for w in wins_page],
+                       cls="space-y-1.5") if wins_page else P("No high-impression / low-rank queries", cls="text-sm text-base-content/50 italic"),
+                ),
+            ),
+        ),
+        Div(cls="section")(
+            Div(cls="flex items-center justify-between mb-3")(
+                H2("❓ FAQ Opportunities", cls="section-title mb-0"),
+                Span(f"{len(faq_queries)}", cls="badge badge-soft-info badge-sm"),
+            ),
+            P("Question queries that could become FAQ schema on this page", cls="section-subtitle mb-3"),
+            Div(cls="flex flex-wrap gap-2")(
+                *[Span(q, cls="badge badge-soft badge-sm cursor-default", title=q) for q in faq_queries[:15]]
+            ) if faq_queries else P("No question queries found", cls="text-sm text-base-content/50 italic"),
+        ),
+        Div(cls="section")(
+            Div(cls="flex items-center justify-between mb-3")(
+                H2(f"🔑 Top Queries ({len(queries)})", cls="section-title mb-0"),
+            ),
+            P("All search queries driving traffic to this page", cls="section-subtitle mb-3"),
+            Div(cls="overflow-x-auto")(
+                Table(cls="table table-zebra table-hover table-sm")(
+                    Thead(Tr(
+                        Th("#", cls="w-8"),
+                        Th("Query"),
+                        Th("Clicks", cls="text-right"),
+                        Th("Impr", cls="text-right"),
+                        Th("Pos", cls="text-right"),
+                        Th("CTR", cls="text-right"),
+                    )),
+                    Tbody(*[
+                        Tr(
+                            Td(Span(str(i + 1), cls="text-base-content/40 text-xs font-mono")),
+                            Td(A(q["query"], href=f"https://www.google.com/search?q={q['query']}", target="_blank", cls="link link-hover text-sm")),
+                            Td(f"{q['total_clicks']:,}", cls="text-right font-medium"),
+                            Td(f"{q['total_impressions']:,}", cls="text-right text-base-content/70"),
+                            Td(Span(f"{q['avg_position']:.1f}", cls="badge badge-ghost badge-sm"), cls="text-right"),
+                            Td(Span(f"{q['avg_ctr']*100:.1f}%", cls=("text-success" if q['avg_ctr'] * 100 >= 5 else "text-base-content/70")), cls="text-right"),
+                        ) for i, q in enumerate(queries)
+                    ]) if queries else Tr(Td(P("No queries found for this page in the last 30 days.", cls="text-sm text-base-content/50 italic text-center py-4"), colspan="6")),
+                ),
+            ),
+        ),
+    )
+
+
 @rt("/wuILT/{store_pk:int}/product-gsc/{pid:int}")
 def wuilt_product_gsc(store_pk: int, pid: int):
     try:
@@ -3248,77 +3785,99 @@ def wuilt_product_gsc(store_pk: int, pid: int):
             store = session.get(WuiltStore, store_pk)
             product = session.get(WuiltProduct, pid)
             if not store or not product or product.wuilt_store_id != store_pk:
-                return Div(cls="alert alert-error")(Span("Product not found"))
-            website = session.get(Website, store.website_id) if store.website_id else None
-            if not website and store.store_domain:
-                raw = store.store_domain.replace("https://", "").replace("http://", "").rstrip("/")
-                for loc in ("/ar", "/en"):
-                    if raw.endswith(loc):
-                        raw = raw[: -len(loc)]
-                        break
-                website = session.exec(select(Website).where(Website.url.contains(raw))).first()
-            if website:
-                domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
-                site_url = f"sc-domain:{domain}"
-            elif store.store_domain:
-                base = _store_base_url(store)
-                domain = base.replace("https://", "")
-                site_url = f"sc-domain:{domain}"
-            else:
-                return Div(cls="alert alert-warning")(Span("Set store_domain or link a Website to enable GSC."))
-            product_url = f"{_store_base_url(store)}/{store.locale}/product/all/{product.handle}"
-            start, end = get_date_range("last_days", days=30)
-            analytics = get_page_analytics(session, site_url, product_url, start, end)
-            queries = get_top_queries(session, site_url, start, end, page_path=product_url, limit=10)
-            faq_queries = extract_faq_queries(queries)
+                return Title("Not found"), Main(cls="container")(empty_state("🔍", "Product not found", "This product doesn't exist or has been deleted.", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+            _, site_url, base_url = _resolve_store_site(store, session)
+            if not site_url:
+                return Title("No GSC"), Main(cls="container")(empty_state("📊", "No GSC connection", "Set the store domain or link a Website to enable Google Search Console data.", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+            product_url = f"{base_url}/{store.locale}/product/all/{product.handle}"
+            analysis = _render_gsc_analysis_modal(session, site_url, product_url, product.title, "product")
     except Exception as e:
-        return Div(cls="alert alert-error")(Span(f"Error: {e}"))
-    return Div(cls="card card-border bg-base-100 shadow-sm mb-4")(
-        Div(cls="card-body")(
-            Div(cls="flex items-start justify-between")(
-                H3(product.title, cls="card-title text-base"),
-                A(product_url, href=product_url, target="_blank", cls="link link-primary text-xs truncate max-w-64"),
-            ),
-            Div(cls="stats shadow-sm mt-2")(
-                Div(cls="stat py-2")(
-                    Div("Clicks", cls="stat-title text-xs"),
-                    Div(f"{analytics['total_clicks']:,}", cls="stat-value text-lg"),
-                ),
-                Div(cls="stat py-2")(
-                    Div("Impr", cls="stat-title text-xs"),
-                    Div(f"{analytics['total_impressions']:,}", cls="stat-value text-lg"),
-                ),
-                Div(cls="stat py-2")(
-                    Div("Pos", cls="stat-title text-xs"),
-                    Div(f"{analytics['avg_position']:.1f}", cls="stat-value text-lg"),
-                ),
-                Div(cls="stat py-2")(
-                    Div("CTR", cls="stat-title text-xs"),
-                    Div(f"{analytics['avg_ctr']*100:.1f}%" if analytics['avg_ctr'] else "0%", cls="stat-value text-lg"),
-                ),
-            ),
-            H4(f"Top Queries ({len(queries)})", cls="text-sm font-semibold mt-3 mb-1"),
-            Div(cls="overflow-x-auto")(
-                Table(cls="table table-xs")(
-                    Thead(Tr(Th("Query", cls="text-xs"), Th("Clicks", cls="text-xs"), Th("Impr", cls="text-xs"), Th("Pos", cls="text-xs"), Th("CTR", cls="text-xs"))),
-                    Tbody(*[
-                        Tr(
-                            Td(q["query"], cls="text-xs max-w-40 truncate"),
-                            Td(f"{q['total_clicks']:,}", cls="text-xs"),
-                            Td(f"{q['total_impressions']:,}", cls="text-xs"),
-                            Td(f"{q['avg_position']:.1f}", cls="text-xs"),
-                            Td(f"{q['avg_ctr']*100:.1f}%", cls="text-xs"),
-                        ) for q in queries
-                    ]) if queries else Tr(Td("No queries found", colspan="5", cls="text-xs")),
-                ),
-            ),
-            Div(cls="mt-2")(
-                Span("❓ FAQ Opportunities: ", cls="text-xs font-semibold"),
-                Span(str(len(faq_queries)), cls="text-xs"),
-                Ul(*[Li(q, cls="text-xs") for q in faq_queries], cls="list-disc list-inside mt-1") if faq_queries else Span(" None", cls="text-xs text-base-content/60"),
-            ),
+        return Title("Error"), Main(cls="container")(empty_state("❌", "Something went wrong", f"Error: {e}", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+    return Title(f"{product.title} - GSC - {store.name}"), Main(cls="container")(
+        page_header(
+            f"📊 {product.title}",
+            f"Google Search Console analysis · {store.name}",
+            back=f"/wuILT/{store_pk}",
+            actions=[A("🌐 Open page", href=product_url, target="_blank", cls="btn btn-ghost btn-sm")],
         ),
-    ) + Script("document.getElementById('wuilt-modal').showModal()")
+        analysis,
+    )
+
+
+@rt("/wuILT/{store_pk:int}/page-gsc/{pid:int}")
+def wuilt_page_gsc(store_pk: int, pid: int):
+    try:
+        with get_session() as session:
+            store = session.get(WuiltStore, store_pk)
+            page = session.get(WuiltPage, pid)
+            if not store or not page or page.wuilt_store_id != store_pk:
+                return Title("Not found"), Main(cls="container")(empty_state("🔍", "Page not found", "This page doesn't exist or has been deleted.", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+            _, site_url, base_url = _resolve_store_site(store, session)
+            if not site_url:
+                return Title("No GSC"), Main(cls="container")(empty_state("📊", "No GSC connection", "Set the store domain or link a Website to enable Google Search Console data.", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+            page_url = f"{base_url}/{store.locale}/{page.handle}"
+            analysis = _render_gsc_analysis_modal(session, site_url, page_url, page.name, "page")
+    except Exception as e:
+        return Title("Error"), Main(cls="container")(empty_state("❌", "Something went wrong", f"Error: {e}", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+    return Title(f"{page.name} - GSC - {store.name}"), Main(cls="container")(
+        page_header(
+            f"📄 {page.name}",
+            f"Google Search Console analysis · {store.name}",
+            back=f"/wuILT/{store_pk}",
+            actions=[A("🌐 Open page", href=page_url, target="_blank", cls="btn btn-ghost btn-sm")],
+        ),
+        analysis,
+    )
+
+
+@rt("/wuILT/{store_pk:int}/homepage-gsc")
+def wuilt_homepage_gsc(store_pk: int):
+    try:
+        with get_session() as session:
+            store = session.get(WuiltStore, store_pk)
+            if not store:
+                return Title("Not found"), Main(cls="container")(empty_state("🔍", "Store not found", "This store doesn't exist or has been deleted.", cta_text="← All Stores", cta_href="/wuILT"))
+            _, site_url, base_url = _resolve_store_site(store, session)
+            if not site_url:
+                return Title("No GSC"), Main(cls="container")(empty_state("📊", "No GSC connection", "Set the store domain or link a Website to enable Google Search Console data.", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+            homepage_url = f"{base_url}/{store.locale}"
+            analysis = _render_gsc_analysis_modal(session, site_url, homepage_url, f"{store.name} — Homepage", "homepage")
+    except Exception as e:
+        return Title("Error"), Main(cls="container")(empty_state("❌", "Something went wrong", f"Error: {e}", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+    return Title(f"Homepage GSC - {store.name}"), Main(cls="container")(
+        page_header(
+            "🏠 Homepage",
+            f"Google Search Console analysis · {store.name}",
+            back=f"/wuILT/{store_pk}",
+            actions=[A("🌐 Open homepage", href=homepage_url, target="_blank", cls="btn btn-ghost btn-sm")],
+        ),
+        analysis,
+    )
+
+
+@rt("/wuILT/{store_pk:int}/collection-gsc/{handle}")
+def wuilt_collection_gsc(store_pk: int, handle: str):
+    try:
+        with get_session() as session:
+            store = session.get(WuiltStore, store_pk)
+            if not store:
+                return Title("Not found"), Main(cls="container")(empty_state("🔍", "Store not found", "This store doesn't exist or has been deleted.", cta_text="← All Stores", cta_href="/wuILT"))
+            _, site_url, base_url = _resolve_store_site(store, session)
+            if not site_url:
+                return Title("No GSC"), Main(cls="container")(empty_state("📊", "No GSC connection", "Set the store domain or link a Website to enable Google Search Console data.", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+            collection_url = f"{base_url}/{store.locale}/collection/{handle}"
+            analysis = _render_gsc_analysis_modal(session, site_url, collection_url, f"Collection: {handle}", "collection")
+    except Exception as e:
+        return Title("Error"), Main(cls="container")(empty_state("❌", "Something went wrong", f"Error: {e}", cta_text="← Back to Store", cta_href=f"/wuILT/{store_pk}"))
+    return Title(f"Collection GSC - {store.name}"), Main(cls="container")(
+        page_header(
+            f"📚 {handle}",
+            f"Collection · {store.name}",
+            back=f"/wuILT/{store_pk}",
+            actions=[A("🌐 Open collection", href=collection_url, target="_blank", cls="btn btn-ghost btn-sm")],
+        ),
+        analysis,
+    )
 
 
 @rt("/wuILT/{store_pk:int}/product-schema/{pid:int}")
