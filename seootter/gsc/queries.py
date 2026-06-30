@@ -11,7 +11,7 @@ __all__ = ['get_top_queries', 'get_top_pages', 'get_wins', 'get_top_queries_excl
 
 # %% ../../nbs/05b_gsc_queries.ipynb #imports
 from sqlmodel import Session, select
-from ..models import GSCAnalytics
+from ..models import GSCAnalytics, GSCPropertyTotals
 from datetime import datetime, timedelta
 from functools import partial
 from fastcore.basics import compose
@@ -49,23 +49,41 @@ def get_top_queries(session: Session,  # Active database session
 
 # %% ../../nbs/05b_gsc_queries.ipynb #get_top_pages
 def get_top_pages(session: Session, site_url: str, start_date: str, end_date: str,
-                  country: str | None = None, limit: int = 20, sort_by: str = "clicks") -> list[dict]:
-    "Get top performing pages by clicks or impressions."
-    base = select(GSCAnalytics.page,
-                  func.sum(GSCAnalytics.clicks).label("total_clicks"),
-                  func.sum(GSCAnalytics.impressions).label("total_impressions"),
-                  func.avg(GSCAnalytics.position).label("avg_position"),
-                  func.avg(GSCAnalytics.ctr).label("avg_ctr"))
-    filters = [partial(filter_site, site_url=site_url),
-               partial(filter_dates, start=start_date, end=end_date)]
-    if country: filters.append(partial(filter_dimension, dimension="country", value=country))
-    sort_col = func.sum(GSCAnalytics.impressions) if sort_by == "impressions" else func.sum(GSCAnalytics.clicks)
-    query = (compose(*filters)(base)
-             .where(GSCAnalytics.page.isnot(None))
-             .group_by(GSCAnalytics.page)
-             .order_by(sort_col.desc())
-             .limit(limit))
-    return [row._asdict() for row in session.exec(query)]
+                  country: str | None = None, limit: int = 20, sort_by: str = 'clicks') -> list[dict]:
+    '''Get top performing pages by clicks or impressions.'''
+    if country:
+        base = select(GSCAnalytics.page,
+                      func.sum(GSCAnalytics.clicks).label('total_clicks'),
+                      func.sum(GSCAnalytics.impressions).label('total_impressions'),
+                      func.avg(GSCAnalytics.position).label('avg_position'),
+                      func.avg(GSCAnalytics.ctr).label('avg_ctr'))
+        filters = [partial(filter_site, site_url=site_url),
+                   partial(filter_dates, start=start_date, end=end_date),
+                   partial(filter_dimension, dimension='country', value=country)]
+        sort_col = func.sum(GSCAnalytics.impressions) if sort_by == 'impressions' else func.sum(GSCAnalytics.clicks)
+        query = (compose(*filters)(base)
+                 .where(GSCAnalytics.page.isnot(None))
+                 .group_by(GSCAnalytics.page)
+                 .order_by(sort_col.desc())
+                 .limit(limit))
+        return [row._asdict() for row in session.exec(query)]
+    else:
+        from seootter.models import GSCPageTotals
+        base = select(GSCPageTotals.page,
+                      func.sum(GSCPageTotals.clicks).label('total_clicks'),
+                      func.sum(GSCPageTotals.impressions).label('total_impressions'),
+                      func.avg(GSCPageTotals.position).label('avg_position'),
+                      func.avg(GSCPageTotals.ctr).label('avg_ctr'))
+        sort_col = func.sum(GSCPageTotals.impressions) if sort_by == 'impressions' else func.sum(GSCPageTotals.clicks)
+        query = (base
+                 .where(GSCPageTotals.site_url == site_url)
+                 .where(GSCPageTotals.date >= start_date)
+                 .where(GSCPageTotals.date <= end_date)
+                 .group_by(GSCPageTotals.page)
+                 .order_by(sort_col.desc())
+                 .limit(limit))
+        return [row._asdict() for row in session.exec(query)]
+
 
 # %% ../../nbs/05b_gsc_queries.ipynb #get_wins
 def get_wins(session: Session, site_url: str, start_date: str, end_date: str,
@@ -284,7 +302,7 @@ def get_country_breakdown(session: Session,  # Active database session
 
     return [row._asdict() for row in session.exec(query)]
 
-# %% ../../nbs/05b_gsc_queries.ipynb #f5f33409
+# %% ../../nbs/05b_gsc_queries.ipynb #dd62bb46
 def get_property_totals(session: Session,  # Active database session
                         site_url: str,  # GSC property URL
                         start_date: str,  # Start date (YYYY-MM-DD)

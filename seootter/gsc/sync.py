@@ -11,7 +11,7 @@ __all__ = ['store_single_date', 'store_date_range', 'iter_dates', 'get_missing_d
 from sqlmodel import Session, select
 from ..models import GSCAnalytics
 from datetime import datetime, timedelta
-from .filters import store_gsc_data
+from .filters import store_gsc_data, store_gsc_property_totals, store_gsc_page_totals
 from ..gsc_client import GSCAuth, fetch_gsc_data, get_date_range
 import time
 
@@ -25,6 +25,10 @@ def store_single_date(session: Session,  # Active database session
     # Fetch exact property totals (without query dimension to avoid anonymization filtering)
     totals = fetch_gsc_data(auth, site_url, date, date, dimensions=["date"])
     store_gsc_property_totals(session, site_url, date, totals)
+
+    # Fetch exact page totals (without query dimension)
+    page_rows = fetch_gsc_data(auth, site_url, date, date, dimensions=['page'])
+    store_gsc_page_totals(session, site_url, date, page_rows)
     
     # Fetch detailed query data
     rows = fetch_gsc_data(auth, site_url, date, date)

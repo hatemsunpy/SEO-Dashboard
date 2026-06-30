@@ -8,13 +8,13 @@ Docs: https://abdelkareemkobo.github.io/seootterinsights_keywords.html.md"""
 __all__ = ['STOP_WORDS', 'filter_missing', 'query_words_in_content', 'all_missing_queries', 'FilterMissingQueries',
            'filter_missing_queries', 'find_green_keywords']
 
-# %% ../../nbs/12c_insights_keywords.ipynb #c5c9a051
+# %% ../../nbs/12c_insights_keywords.ipynb #e3842d6e
 from sqlmodel import Session
 from ..gsc.queries import get_top_queries
 from .trends import detect_query_trends
 
 
-# %% ../../nbs/12c_insights_keywords.ipynb #14f4e8aa
+# %% ../../nbs/12c_insights_keywords.ipynb #e657f8c9
 STOP_WORDS = {
     "a",
     "an",
@@ -50,7 +50,7 @@ def query_words_in_content(query: str,
     return all(w in content.lower() for w in words)
 
 
-# %% ../../nbs/12c_insights_keywords.ipynb #82869113
+# %% ../../nbs/12c_insights_keywords.ipynb #3740d6d9
 from logging import Filter
 import dspy
 
@@ -97,7 +97,7 @@ def filter_missing_queries(
 
 
 
-# %% ../../nbs/12c_insights_keywords.ipynb #4f472f46
+# %% ../../nbs/12c_insights_keywords.ipynb #4883a0f0
 def find_green_keywords(
     session: Session,
     site_url: str,
