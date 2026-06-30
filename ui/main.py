@@ -551,7 +551,7 @@ def _run_sync(id: int, site_url: str, days: int):
         except ValueError:
             _sync_progress[id] = {"status": "error", "msg": "GSC not authenticated"}
             return
-        start_date, end_date = get_date_range("last_days", days=days)
+        start_date, end_date = get_date_range("last_days", days=int(days))
         dates = get_missing_dates(session, site_url, start_date, end_date)
         total = len(dates)
         if total == 0:
@@ -801,57 +801,73 @@ def site_redirect(id: int):
     return RedirectResponse(site.to(id=id), status_code=301)
 
 
-def render_sync_progress(id: int):
+def render_sync_widget(id: int, days: int = 90):
+    days = int(days)
     prog = _sync_progress.get(id)
-    if not prog:
-        return P("No sync in progress", cls="text-sm")
-    if prog["status"] == "running":
-        pct = int(prog["done"] / prog["total"] * 100)
+    if prog and prog.get("status") == "running":
+        total = prog.get("total", 0)
+        done = prog.get("done", 0)
+        pct = int(done / total * 100) if total > 0 else 0
         return Div(
-            Progress(cls="-primary w-full", value=str(pct), max="100"),
-            Span(f"Synced {prog['done']}/{prog['total']} dates ({pct}%)", cls="text-sm"),
-            hx_get=sync_progress.to(id=id),
+            Progress(cls="-primary w-full h-2", value=str(pct), max="100"),
+            Span(f"Syncing GSC: {pct}% ({done}/{total} dates)", cls="text-xs font-semibold text-primary block mt-1"),
+            hx_get=f"/sync_widget?id={id}&days={days}",
             hx_trigger="every 2s",
             hx_target="this",
             hx_swap="outerHTML",
         )
-    if prog["status"] == "done":
+    if prog and prog.get("status") == "done":
+        _sync_progress[id] = None  # Reset progress status so button shows next time
         return Div(
-            Progress(cls="-success w-full", value="100", max="100"),
-            Span(f"Synced {prog['days']} days, {prog['records']} records. ", cls="text-sm text-success"),
-            Link("Refresh", href=site.to(id=id), cls="-primary ml-2"),
+            Span(f"✅ Sync complete! ({prog.get('days', 0)}d)", cls="text-xs text-success font-semibold mr-2"),
+            A("🔄 Refresh", href=f"/site?id={id}&days={days}", cls="btn btn-xs btn-success btn-soft"),
         )
-    if prog["status"] == "error":
-        return Alert(Span(prog["msg"]), cls="-error")
+    if prog and prog.get("status") == "error":
+        _sync_progress[id] = None  # Reset progress status so try again shows
+        return Div(
+            Span(f"❌ Error: {prog.get('msg', 'Unknown')}", cls="text-xs text-error font-semibold mr-2"),
+            Btn("🔄 Try Again",
+                cls="btn btn-xs btn-error btn-soft",
+                hx_post=sync_start.to(id=id, days=days),
+                hx_target="#sync-container",
+                hx_swap="outerHTML",
+            )
+        )
+    return Btn("🔄 Sync GSC Data",
+        cls="btn-outline btn-primary btn-sm",
+        hx_post=sync_start.to(id=id, days=days),
+        hx_target="#sync-container",
+        hx_swap="outerHTML",
+    )
 
 
 @rt
 def sync_start(id: int, days: int = 90):
+    days = int(days)
     with get_session() as session:
         website = session.get(Website, id)
         if not website:
             return P("Website not found")
         domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
         site_url = f"sc-domain:{domain}"
-    _sync_progress[id] = {"status": "running"}
+    _sync_progress[id] = {"status": "running", "done": 0, "total": 0, "records": 0}
     Thread(target=_run_sync, args=(id, site_url, days), daemon=True).start()
-    return Div(
-        Progress(cls="-primary w-full", value="0", max="100"),
-        Span("Starting sync...", cls="text-sm"),
-        hx_get=sync_progress.to(id=id),
-        hx_trigger="every 2s",
-        hx_target="this",
-        hx_swap="outerHTML",
-    )
+    return render_sync_widget(id, days)
 
 
 @rt
-def sync_progress(id: int):
-    return render_sync_progress(id)
+def sync_widget(id: int, days: int = 90):
+    return render_sync_widget(id, days)
 
+
+DAYS_OPTIONS = [(30, "30 Days"), (90, "3 Months"), (180, "6 Months"), (365, "12 Months"), (480, "16 Months")]
+
+def get_days_label(days: int) -> str:
+    return dict(DAYS_OPTIONS).get(days, f"{days} days")
 
 @rt
-def site(id: int):
+def site(id: int, days: int = 30):
+    days = int(days)
     with get_session() as session:
         website = session.get(Website, id)
         if not website:
@@ -860,8 +876,8 @@ def site(id: int):
         domain = website.url.replace("https://", "").replace("http://", "").rstrip("/")
         site_url = f"sc-domain:{domain}"
 
-        metrics = get_site_metrics(session, site_url)
-        start, end = get_date_range("last_days", days=30)
+        metrics = get_site_metrics(session, site_url, days=days)
+        start, end = get_date_range("last_days", days=days)
         tp = get_top_pages(session, site_url, start, end, limit=10)
 
         delete_modal_id = f"delete-modal-{id}"
@@ -879,14 +895,17 @@ def site(id: int):
                             P(website.url, cls="text-sm text-base-content/50 truncate"),
                         ),
                     ),
-                    Div(cls="page-header actions", id="sync-btn-area")(
-                        Button("🗑 Delete", cls="btn btn-soft btn-error btn-sm",
+                    Div(cls="page-header actions")(
+                        Select(
+                            *[Option(label, value=str(val), selected=(days == val)) for val, label in DAYS_OPTIONS],
+                            cls="select select-bordered select-sm mr-2",
+                            name="days",
+                            onchange=f"window.location.href='/site?id={id}&days=' + this.value"
+                        ),
+                        Button("🗑 Delete", cls="btn btn-soft btn-error btn-sm mr-2",
                                onclick=f"document.getElementById('{delete_modal_id}').showModal()"),
-                        Btn("🔄 Sync GSC Data",
-                            cls="btn-outline btn-primary btn-sm",
-                            hx_post=sync_start.to(id=id),
-                            hx_target="#sync-btn-area",
-                            hx_swap="outerHTML",
+                        Div(id="sync-container", cls="inline-block align-middle")(
+                            render_sync_widget(id, days)
                         ),
                     ),
                 ),
@@ -908,12 +927,12 @@ def site(id: int):
                 ),
                 Form(method="dialog", cls="modal-backdrop")(Button("close")),
             ),
-            render_metrics(metrics, session, site_url),
+            render_metrics(metrics, session, site_url, days=days),
             Div(cls="section mt-6")(
                 Div(cls="flex items-center justify-between mb-3")(
                     Div()(
                         H2("📄 Top Pages", cls="section-title"),
-                        P("Your highest-trafficking pages over the last 30 days", cls="section-subtitle"),
+                        P(f"Your highest-trafficking pages over the last {get_days_label(days)}", cls="section-subtitle"),
                     ),
                     A("View all →", href=top_pages.to(id=id), cls="btn btn-ghost btn-sm"),
                 ),
@@ -922,7 +941,7 @@ def site(id: int):
                 Div(cls="flex items-center justify-between mb-3")(
                     Div()(
                         H2("📄 Top Pages", cls="section-title"),
-                        P("Your highest-trafficking pages over the last 30 days", cls="section-subtitle"),
+                        P(f"Your highest-trafficking pages over the last {get_days_label(days)}", cls="section-subtitle"),
                     ),
                     A("Sync now →", href="#", cls="btn btn-primary btn-sm",
                       onclick=f"document.getElementById('sync-btn-area').querySelector('button[hx_post]').click()"),
@@ -942,7 +961,7 @@ def site(id: int):
 
 
 def get_site_metrics(session, site_url, days=30):
-    start, end = get_date_range("last_days", days=days)
+    start, end = get_date_range("last_days", days=int(days))
     q = (
         select(
             func.sum(GSCAnalytics.clicks).label("clicks"),
@@ -970,10 +989,11 @@ METRIC_ICONS = {
     "avg_ctr": "📈",
 }
 
-def render_metrics(metrics, session=None, site_url=None):
+def render_metrics(metrics, session=None, site_url=None, days=30):
+    lbl = get_days_label(days)
     items = [
-        ("clicks", f"{metrics['clicks']:,}", "Clicks (30d)", "👆"),
-        ("impressions", f"{metrics['impressions']:,}", "Impressions (30d)", "👁️"),
+        ("clicks", f"{metrics['clicks']:,}", f"Clicks ({lbl})", "👆"),
+        ("impressions", f"{metrics['impressions']:,}", f"Impressions ({lbl})", "👁️"),
         ("avg_position", f"{metrics['avg_position']:.1f}", "Avg Position", "📍"),
         ("avg_ctr", f"{metrics['avg_ctr']:.1f}%", "Avg CTR", "📈"),
     ]
@@ -1022,7 +1042,7 @@ SORT_OPTIONS = [
     ("position", "Best Position"),
 ]
 
-DAYS_OPTIONS = [(7, "7 days"), (30, "30 days"), (90, "90 days"), (365, "1 year")]
+# DAYS_OPTIONS is defined globally above
 
 
 def render_top_pages_filters(id: int, current_sort: str, current_days: int, current_country: str, countries: list[tuple[str, str]]):
@@ -2706,6 +2726,20 @@ def report_content(id: int, refresh: bool = False, export: str = ""):
             if export:
                 return _report_export_response(cached, export)
             return _report_content_fragment(cached)
+
+    if not refresh:
+        prog = _report_progress.get(id)
+        if prog and prog.get("status") == "running":
+            pct = prog.get("pct", 0)
+            msg = prog.get("msg", "Running...")
+            return Div(
+                Progress(value=str(pct), max="100", cls="w-full"),
+                Span(f"{pct}% — {msg}", cls="text-sm ml-2"),
+                hx_get=report_progress.to(id=id),
+                hx_trigger="every 1s",
+                hx_target="this",
+                hx_swap="outerHTML",
+            )
 
     with get_session() as session:
         website = session.get(Website, id)

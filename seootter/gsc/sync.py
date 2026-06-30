@@ -71,7 +71,7 @@ def get_missing_dates(session: Session,  # Active database session
     stored = set(session.exec(
         select(GSCAnalytics.date).where(GSCAnalytics.site_url == site_url).distinct()
     ).all())
-    return sorted(set(iter_dates(start_date, end_date)) - stored)
+    return sorted(set(iter_dates(start_date, end_date)) - stored, reverse=True)
 
 # %% ../../nbs/05c_gsc_sync.ipynb #sync_missing_dates
 def sync_missing_dates(session: Session, auth: GSCAuth, site_url: str, start_date: str, end_date: str) -> dict:
