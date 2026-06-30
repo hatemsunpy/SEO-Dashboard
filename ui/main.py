@@ -818,8 +818,10 @@ def render_sync_widget(id: int, days: int = 90):
         )
     if prog and prog.get("status") == "done":
         _sync_progress[id] = None  # Reset progress status so button shows next time
+        days_synced = prog.get('days', 0)
+        msg = f"✅ Sync complete! ({days_synced} dates)" if days_synced > 0 else "✅ Up to date!"
         return Div(
-            Span(f"✅ Sync complete! ({prog.get('days', 0)}d)", cls="text-xs text-success font-semibold mr-2"),
+            Span(msg, cls="text-xs text-success font-semibold mr-2"),
             A("🔄 Refresh", href=f"/site?id={id}&days={days}", cls="btn btn-xs btn-success btn-soft"),
         )
     if prog and prog.get("status") == "error":
@@ -961,24 +963,14 @@ def site(id: int, days: int = 30):
 
 
 def get_site_metrics(session, site_url, days=30):
+    from seootter.gsc.queries import get_property_totals
     start, end = get_date_range("last_days", days=int(days))
-    q = (
-        select(
-            func.sum(GSCAnalytics.clicks).label("clicks"),
-            func.sum(GSCAnalytics.impressions).label("impressions"),
-            func.avg(GSCAnalytics.position).label("avg_position"),
-            func.avg(GSCAnalytics.ctr).label("avg_ctr"),
-        )
-        .where(GSCAnalytics.site_url == site_url)
-        .where(GSCAnalytics.date >= start)
-        .where(GSCAnalytics.date <= end)
-    )
-    result = session.exec(q).first()
+    totals = get_property_totals(session, site_url, start, end)
     return {
-        "clicks": result.clicks or 0,
-        "impressions": result.impressions or 0,
-        "avg_position": round(result.avg_position or 0, 1),
-        "avg_ctr": round((result.avg_ctr or 0) * 100, 2),
+        "clicks": totals["clicks"],
+        "impressions": totals["impressions"],
+        "avg_position": round(totals["avg_position"], 1),
+        "avg_ctr": round(totals["avg_ctr"] * 100, 2),
     }
 
 

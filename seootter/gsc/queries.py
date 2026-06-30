@@ -7,7 +7,7 @@ Docs: https://abdelkareemkobo.github.io/seoottergsc_queries.html.md"""
 # %% auto #0
 __all__ = ['get_top_queries', 'get_top_pages', 'get_wins', 'get_top_queries_excluding_pages', 'get_page_analytics',
            'get_analytics_by_date_range', 'get_trends', 'get_analytics_by', 'compare_date_ranges',
-           'get_country_breakdown']
+           'get_country_breakdown', 'get_property_totals']
 
 # %% ../../nbs/05b_gsc_queries.ipynb #imports
 from sqlmodel import Session, select
@@ -283,3 +283,30 @@ def get_country_breakdown(session: Session,  # Active database session
              .limit(limit))
 
     return [row._asdict() for row in session.exec(query)]
+
+# %% ../../nbs/05b_gsc_queries.ipynb #f5f33409
+def get_property_totals(session: Session,  # Active database session
+                        site_url: str,  # GSC property URL
+                        start_date: str,  # Start date (YYYY-MM-DD)
+                        end_date: str  # End date (YYYY-MM-DD)
+                        ) -> dict:
+    "Get exact property-level totals for a date range (not affected by anonymized queries filter)."
+    q = (
+        select(
+            func.sum(GSCPropertyTotals.clicks).label("clicks"),
+            func.sum(GSCPropertyTotals.impressions).label("impressions"),
+            func.avg(GSCPropertyTotals.position).label("avg_position"),
+            func.avg(GSCPropertyTotals.ctr).label("avg_ctr"),
+        )
+        .where(GSCPropertyTotals.site_url == site_url)
+        .where(GSCPropertyTotals.date >= start_date)
+        .where(GSCPropertyTotals.date <= end_date)
+    )
+    result = session.exec(q).first()
+    return {
+        "clicks": result.clicks or 0,
+        "impressions": result.impressions or 0,
+        "avg_position": round(result.avg_position or 0, 2),
+        "avg_ctr": round(result.avg_ctr or 0, 4)
+    }
+

@@ -21,10 +21,17 @@ def store_single_date(session: Session,  # Active database session
                       site_url: str,  # GSC property URL
                       date: str  # Date to fetch and store (YYYY-MM-DD)
                       ) -> int:
-    "Fetch and store GSC data for a single date. Returns number of records stored."
+    "Fetch and store GSC data for a single date. Returns number of detailed records stored."
+    # Fetch exact property totals (without query dimension to avoid anonymization filtering)
+    totals = fetch_gsc_data(auth, site_url, date, date, dimensions=["date"])
+    store_gsc_property_totals(session, site_url, date, totals)
+    
+    # Fetch detailed query data
     rows = fetch_gsc_data(auth, site_url, date, date)
     store_gsc_data(session, site_url, date, rows)
+    
     return len(rows)
+
 
 # %% ../../nbs/05c_gsc_sync.ipynb #sync_dates
 def _sync_dates(session: Session,  # Active database session
