@@ -226,6 +226,9 @@ importers:
       prettier:
         specifier: ^3.6.2
         version: 3.8.1
+      throttleit:
+        specifier: 2.1.0
+        version: 2.1.0
       tsx:
         specifier: ^4.22.4
         version: 4.22.4

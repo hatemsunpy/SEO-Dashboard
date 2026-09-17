@@ -13,6 +13,10 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# Windows checkouts may convert shell scripts to CRLF. Normalize the runtime
+# entrypoint so /bin/sh can parse it inside the Linux container.
+RUN sed -i 's/\r$//' docker-entrypoint.sh
+
 EXPOSE 3001
 
 # Readiness probe against the unauthenticated setup/health endpoint. The long

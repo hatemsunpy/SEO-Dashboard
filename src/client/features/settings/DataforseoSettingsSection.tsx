@@ -160,7 +160,10 @@ export function DataforseoSettingsSection({
       toast.success("DataForSEO settings saved");
       setLoginInput("");
       setPasswordInput("");
-      await queryClient.invalidateQueries({ queryKey });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ["seoApiKeyStatus"] }),
+      ]);
     },
     onError: (err) => {
       toast.error(
@@ -189,7 +192,10 @@ export function DataforseoSettingsSection({
       );
       setLoginInput("");
       setPasswordInput("");
-      await queryClient.invalidateQueries({ queryKey });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ["seoApiKeyStatus"] }),
+      ]);
     },
     onError: (err) => {
       toast.error(getStandardErrorMessage(err, "Failed to clear credentials"));
@@ -354,9 +360,7 @@ export function DataforseoSettingsSection({
               type="checkbox"
               className="toggle toggle-primary toggle-sm"
               checked={circuitBreakerEnabled}
-              onChange={(event) =>
-                setCircuitBreakerInput(event.target.checked)
-              }
+              onChange={(event) => setCircuitBreakerInput(event.target.checked)}
             />
             Circuit breaker
           </label>

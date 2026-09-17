@@ -147,6 +147,7 @@
     "oxlint-tsgolint": "^0.15.0",
     "portless": "^0.5.2",
     "prettier": "^3.6.2",
+    "throttleit": "2.1.0",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.6",
